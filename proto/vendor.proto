@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "vendor-service/proto/generate;proto";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+service VendorService {
+
+  rpc Add(CreateVendorRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/vendor/create"
+      body: "*"
+    };
+  }
+
+  rpc Update(UpdateVendorRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/vendor/update"
+      body: "*"
+    };
+  }
+
+  rpc Delete(DeleteVendorRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/vendor/delete"
+    };
+  }
+
+  rpc FindByID(GetVendorRequest) returns (VendorResponse) {
+    option (google.api.http) = {
+      get: "/vendor/get/{id}"
+    };
+  }
+
+  rpc FindByCode(GetCodeRequest) returns (VendorResponse) {
+    option (google.api.http) = {
+      get: "/vendor/get/{code}"
+    };
+  }
+}
+
+message Vendor {
+  int32 id = 1;
+  string code = 2;
+  string name = 3;
+  string email = 4;
+  string phone = 5;
+  string address = 6;
+  bool active = 7;
+  string createdAt = 8;
+  string updatedAt = 9;
+}
+
+message CreateVendorRequest {
+  string code = 1;
+  string name = 2;
+  string email = 3;
+  string phone = 4;
+  string address = 5;
+}
+
+message UpdateVendorRequest {
+  Vendor vendor = 1;
+}
+
+message DeleteVendorRequest {
+  int32 id = 1;
+}
+
+message GetVendorRequest {
+  int32 id = 1;
+}
+
+message GetCodeRequest {
+  string code = 1;
+}
+
+message VendorResponse {
+  Vendor vendor = 1;
+}
