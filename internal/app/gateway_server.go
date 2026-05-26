@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	pb "order-service/proto/generate"
+	pb "vendor-service/proto/generate"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
@@ -19,7 +19,9 @@ func RunHTTPGateway(grpcAddress string, httpPort int) {
 	dialOptions := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 	register := register(grpcAddress, mux, dialOptions...)
-	register(pb.RegisterOrderServiceHandlerFromEndpoint)
+	register(pb.RegisterHistoryServiceHandlerFromEndpoint)
+	register(pb.RegisterProductServiceHandlerFromEndpoint)
+	register(pb.RegisterVendorServiceHandlerFromEndpoint)
 
 	log.Printf("HTTP Gateway running on :%d\n", httpPort)
 

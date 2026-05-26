@@ -1,6 +1,6 @@
 package main
 
-import "order-service/internal/app"
+import "vendor-service/internal/app"
 
 func main() {
 	err := app.Start()

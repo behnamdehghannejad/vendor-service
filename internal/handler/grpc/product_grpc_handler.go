@@ -24,7 +24,7 @@ func NewProductGrpcHandler(service service.ProductService) *ProductGrpcHandler {
 func (handler *ProductGrpcHandler) Add(ctx context.Context, request *pb.CreateProductRequest) (*emptypb.Empty, error) {
 	requestDto := toProductDomain(request)
 
-	if err := handler.service.Add(requestDto); err != nil {
+	if err := handler.service.Create(requestDto); err != nil {
 		return nil, err
 	}
 
@@ -58,7 +58,7 @@ func (handler *ProductGrpcHandler) FindById(ctx context.Context, request *pb.Get
 	}
 
 	return &pb.ProductResponse{
-		Product: toProto(*product),
+		Product: toProductProto(product),
 	}, nil
 }
 

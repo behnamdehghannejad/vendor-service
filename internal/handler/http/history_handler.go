@@ -165,7 +165,7 @@ func (handler *HistoryHandler) Delete(writer http.ResponseWriter, request *http.
 
 func returnResponse(writer http.ResponseWriter, history *domain.History) {
 	writer.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(writer).Encode(toHistoryResponse(&history))
+	json.NewEncoder(writer).Encode(toHistoryResponse(history))
 }
 
 func toHistoryDomain(req dto.CreateHistoryRequest) *domain.History {
@@ -187,7 +187,7 @@ func toHistoryResponseList(all []domain.History) []dto.HistoryResponse {
 	result := make([]dto.HistoryResponse, 0, len(all))
 
 	for _, h := range all {
-		result = append(result, toHistoryResponse(h))
+		result = append(result, toHistoryResponse(&h))
 	}
 
 	return result
