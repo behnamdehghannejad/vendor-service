@@ -8,21 +8,32 @@ import (
 	"github.com/behnamdehghannejad/vendorservice/internal/handler/dto"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/httperror"
 	"github.com/behnamdehghannejad/vendorservice/internal/port"
+	"github.com/behnamdehghannejad/vendorservice/internal/validator"
 	"github.com/gin-gonic/gin"
 )
 
 type VendorHandler struct {
-	service port.VendorService
+	service   port.VendorService
+	validator *validator.Vendor
 }
 
-func NewVendorHandler(service port.VendorService) *VendorHandler {
-	return &VendorHandler{service: service}
+func NewVendorHandler(service port.VendorService, validator *validator.Vendor) *VendorHandler {
+	return &VendorHandler{
+		service:   service,
+		validator: validator,
+	}
 }
 
 func (handler *VendorHandler) Create(c *gin.Context) {
 	var req dto.CreateVendorRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
+		responseError, status := httperror.Handle(err)
+		c.JSON(status, responseError)
+		return
+	}
+
+	if err := handler.validator.Create(req); err != nil {
 		responseError, status := httperror.Handle(err)
 		c.JSON(status, responseError)
 		return
@@ -43,15 +54,15 @@ func (handler *VendorHandler) GetById(c *gin.Context) {
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		errorresponse, status := httperror.Handle(err)
-		c.JSON(status, errorresponse)
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
 		return
 	}
 
 	vendor, err := handler.service.FindByID(id)
 	if err != nil {
-		errresponse, status := httperror.Handle(err)
-		c.JSON(status, errresponse)
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
 		return
 	}
 
@@ -63,14 +74,20 @@ func (handler *VendorHandler) Delete(c *gin.Context) {
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		errorresponse, status := httperror.Handle(err)
-		c.JSON(status, errorresponse)
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
+		return
+	}
+
+	if err := handler.validator.Delete(id); err != nil {
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
 		return
 	}
 
 	if err := handler.service.Delete(id); err != nil {
-		errorresponse, status := httperror.Handle(err)
-		c.JSON(status, errorresponse)
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
 		return
 	}
 

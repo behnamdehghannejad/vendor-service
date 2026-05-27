@@ -15,6 +15,7 @@ import (
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/log"
 	"github.com/behnamdehghannejad/vendorservice/internal/port"
 	"github.com/behnamdehghannejad/vendorservice/internal/service"
+	"github.com/behnamdehghannejad/vendorservice/internal/validator"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,6 +27,10 @@ func Run() {
 
 	cfg, err := config.Load()
 	if err != nil {
+		return
+	}
+
+	if err := migrate(cfg.Database); err != nil {
 		return
 	}
 
@@ -44,6 +49,14 @@ func Run() {
 	<-stop
 
 	shutdownServer(server)
+}
+
+func migrate(cfg postgres.PostgresConfig) error {
+	migrator := postgres.NewMigrator(cfg)
+	if err := migrator.UP(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func registerServices(cfg postgres.PostgresConfig) (port.HistoryService, port.VendorService, port.ProductService, error) {
@@ -98,6 +111,7 @@ func createServer(
 
 	orderHandler := httphandler.NewVendorHandler(
 		vendorService,
+		validator.NewVendorValidator(vendorService),
 	)
 
 	registerRoutes(router, orderHandler)
