@@ -16,7 +16,7 @@ func New(cfg PostgresConfig) (*gorm.DB, error) {
 		PrepareStmt:                              true,
 		SkipDefaultTransaction:                   false,
 		DisableForeignKeyConstraintWhenMigrating: true,
-		Logger:                                   logger.Default.LogMode(logger.Info),
+		Logger:                                   logger.Discard,
 	})
 	if err != nil {
 		return nil, err
