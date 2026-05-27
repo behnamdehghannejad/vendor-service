@@ -1,11 +1,11 @@
 app:
   name: task-manager
   httpport: 8085
-  gatewayport: 8081
+  gatewayport: 8080
 
 grpc:
   host: "0.0.0.0"
-  port: 50110
+  port: 50100
 
 database:
   host: localhost
