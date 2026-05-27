@@ -40,15 +40,14 @@ func (repo *ProductRepository) Update(domain domain.Product) error {
 }
 
 func (repo *ProductRepository) Delete(id int) error {
-	var product ProductEntity
-	if err := repo.db.Where("id = ?", id).First(&product).Error; err != nil {
-		return convertPostgresErrorToAppError(err)
-	}
-
-	product.UpdatedAt = time.Now()
-	product.Active = false
-	if err := repo.db.Delete(&product).Error; err != nil {
-		return convertPostgresErrorToAppError(err)
+	err := repo.db.Model(&ProductEntity{}).
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"updated_at": time.Now(),
+			"active":     false,
+		}).Error
+	if err != nil {
+		return convertPostgresErrorToAppError(err, id)
 	}
 	return nil
 }

@@ -51,14 +51,16 @@ func (repo *HistoryRepository) Update(history domain.History) error {
 }
 
 func (repo *HistoryRepository) Delete(id int) error {
-	var history HistoryEntity
-	if err := repo.db.Where("id = ?", id).Find(&history).Error; err != nil {
+	err := repo.db.Model(&HistoryEntity{}).
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"updated_at": time.Now(),
+			"active":     false,
+		}).Error
+	if err != nil {
 		return convertPostgresErrorToAppError(err)
 	}
-
-	history.UpdatedAt = time.Now()
-	history.Active = false
-	return repo.db.Save(&history).Error
+	return nil
 }
 
 func (repo *HistoryRepository) FindByOrderID(id uuid.UUID) (domain.History, error) {

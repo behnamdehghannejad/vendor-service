@@ -49,14 +49,14 @@ func (repo *VendorRepository) Update(domain domain.Vendor) error {
 }
 
 func (repo *VendorRepository) Delete(id int) error {
-	var vendor VendorEntity
-	if err := repo.db.Where("id = ?", id).First(&vendor).Error; err != nil {
-		return convertPostgresErrorToAppError(err, id)
-	}
-	vendor.UpdatedAt = time.Now()
-	vendor.Active = false
-	if err := repo.db.Delete(vendor).Error; err != nil {
-		return convertPostgresErrorToAppError(err, id)
+	err := repo.db.Model(&VendorEntity{}).
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"updated_at": time.Now(),
+			"active":     false,
+		}).Error
+	if err != nil {
+		return convertPostgresErrorToAppError(err)
 	}
 	return nil
 }
