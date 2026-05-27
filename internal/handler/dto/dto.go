@@ -53,6 +53,10 @@ type VendorResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type VendorsResponse struct {
+	Items []VendorResponse
+}
+
 type CreateHistoryRequest struct {
 	OrderID   string `json:"order_id"`
 	PaymentID string `json:"payment_id"`

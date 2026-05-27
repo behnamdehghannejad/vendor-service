@@ -13,22 +13,22 @@ func NewVendorService(repository port.VendorRepository) *VendorService {
 	return &VendorService{repository: repository}
 }
 
-func (service *VendorService) Create(vendor domain.Vendor) error {
-	return service.repository.Add(vendor)
+func (s *VendorService) Create(vendor domain.Vendor) error {
+	return s.repository.Add(vendor)
 }
 
-func (service *VendorService) Update(vendor domain.Vendor) error {
-	return service.repository.Update(vendor)
+func (s *VendorService) Update(vendor domain.Vendor) error {
+	return s.repository.Update(vendor)
 }
 
-func (service *VendorService) Delete(id int) error {
-	return service.repository.Delete(id)
+func (s *VendorService) Delete(id int) error {
+	return s.repository.Delete(id)
 }
 
-func (service *VendorService) FindByID(id int) (domain.Vendor, error) {
-	return service.repository.FindByID(id)
+func (s *VendorService) FindByID(id int) (domain.Vendor, error) {
+	return s.repository.FindByID(id)
 }
 
-func (service *VendorService) FindByCode(code string) (domain.Vendor, error) {
-	return service.repository.FindByCode(code)
+func (s *VendorService) Filter(filter domain.SearchVendor) ([]domain.Vendor, error) {
+	return s.repository.Filter(filter)
 }

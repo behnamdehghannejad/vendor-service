@@ -132,7 +132,8 @@ func registerRoutes(
 ) {
 	router.POST("/api/v1/vendors", vendorHandler.Create)
 	router.GET("/api/v1/vendors/:id", vendorHandler.GetById)
-	router.DELETE("/api/v1/vendors/{id}", vendorHandler.Delete)
+	router.DELETE("/api/v1/vendors/:id", vendorHandler.Delete)
+	router.GET("/api/v1/vendors", vendorHandler.Filter)
 }
 
 func getAddress(host string, port string) string {

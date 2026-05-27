@@ -61,6 +61,30 @@ func (repo *VendorRepository) Delete(id int) error {
 	return nil
 }
 
+func (repo *VendorRepository) Filter(filter domain.SearchVendor) ([]domain.Vendor, error) {
+	var vendorsEntity []VendorEntity
+
+	query := repo.db.Model(&HistoryEntity{})
+
+	if filter.IsActive != nil {
+		query = query.Where("active = ?", *filter.IsActive)
+	}
+
+	if filter.Code != "" {
+		query = query.Where("code = ?", filter.Code)
+	}
+
+	if filter.SearchName != "" {
+		query = query.Where("name ILIKE ?", "%"+filter.SearchName+"%")
+	}
+
+	err := query.Find(&vendorsEntity).Error
+	if err != nil {
+		return nil, convertPostgresErrorToAppError(err)
+	}
+	return repo.toVendorsDomain(vendorsEntity), nil
+}
+
 func (repo *VendorRepository) FindByID(id int) (domain.Vendor, error) {
 	var vendor VendorEntity
 	if err := repo.db.Where("id = ?", id).First(&vendor).Error; err != nil {
@@ -103,4 +127,12 @@ func (repo *VendorRepository) toVendorDomain(vendor VendorEntity) domain.Vendor 
 		CreatedAt: vendor.CreatedAt,
 		UpdatedAt: vendor.UpdatedAt,
 	}
+}
+
+func (repo *VendorRepository) toVendorsDomain(vendors []VendorEntity) []domain.Vendor {
+	vendorsDomain := make([]domain.Vendor, 0, len(vendors))
+	for _, vendor := range vendors {
+		vendorsDomain = append(vendorsDomain, repo.toVendorDomain(vendor))
+	}
+	return vendorsDomain
 }

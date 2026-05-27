@@ -24,7 +24,7 @@ func NewVendorHandler(service port.VendorService, validator *validator.Vendor) *
 	}
 }
 
-func (handler *VendorHandler) Create(c *gin.Context) {
+func (h *VendorHandler) Create(c *gin.Context) {
 	var req dto.CreateVendorRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -33,13 +33,13 @@ func (handler *VendorHandler) Create(c *gin.Context) {
 		return
 	}
 
-	if err := handler.validator.Create(req); err != nil {
+	if err := h.validator.Create(req); err != nil {
 		responseError, status := httperror.Handle(err)
 		c.JSON(status, responseError)
 		return
 	}
 
-	err := handler.service.Create(toVendorDomain(req))
+	err := h.service.Create(h.toVendorDomain(req))
 	if err != nil {
 		responseError, status := httperror.Handle(err)
 		c.JSON(status, responseError)
@@ -49,7 +49,7 @@ func (handler *VendorHandler) Create(c *gin.Context) {
 	c.Status(http.StatusCreated)
 }
 
-func (handler *VendorHandler) GetById(c *gin.Context) {
+func (h *VendorHandler) GetById(c *gin.Context) {
 	idStr := c.Param("id")
 
 	id, err := strconv.Atoi(idStr)
@@ -59,17 +59,17 @@ func (handler *VendorHandler) GetById(c *gin.Context) {
 		return
 	}
 
-	vendor, err := handler.service.FindByID(id)
+	vendor, err := h.service.FindByID(id)
 	if err != nil {
 		errorResponse, status := httperror.Handle(err)
 		c.JSON(status, errorResponse)
 		return
 	}
 
-	c.JSON(http.StatusOK, toVendorResponse(vendor))
+	c.JSON(http.StatusOK, h.toVendorResponse(vendor))
 }
 
-func (handler *VendorHandler) Delete(c *gin.Context) {
+func (h *VendorHandler) Delete(c *gin.Context) {
 	idStr := c.Param("id")
 
 	id, err := strconv.Atoi(idStr)
@@ -79,13 +79,13 @@ func (handler *VendorHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	if err := handler.validator.Delete(id); err != nil {
+	if err := h.validator.Delete(id); err != nil {
 		errorResponse, status := httperror.Handle(err)
 		c.JSON(status, errorResponse)
 		return
 	}
 
-	if err := handler.service.Delete(id); err != nil {
+	if err := h.service.Delete(id); err != nil {
 		errorResponse, status := httperror.Handle(err)
 		c.JSON(status, errorResponse)
 		return
@@ -94,7 +94,38 @@ func (handler *VendorHandler) Delete(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func toVendorDomain(req dto.CreateVendorRequest) domain.Vendor {
+func (h *VendorHandler) Filter(c *gin.Context) {
+	code := c.Query("code")
+	searchName := c.Query("search_name")
+	isActive := h.GetIsActiveFromQuery(c.Query("active"))
+
+	vendors, err := h.service.Filter(domain.SearchVendor{
+		Code:       code,
+		SearchName: searchName,
+		IsActive:   isActive,
+	})
+	if err != nil {
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
+		return
+	}
+
+	c.JSON(http.StatusOK, h.toVendorsResponse(vendors))
+}
+
+func (h *VendorHandler) GetIsActiveFromQuery(activeStr string) *bool {
+	active := true
+	deActive := false
+	switch activeStr {
+	case "active":
+		return &active
+	case "deActive":
+		return &deActive
+	}
+	return nil
+}
+
+func (h *VendorHandler) toVendorDomain(req dto.CreateVendorRequest) domain.Vendor {
 	return domain.Vendor{
 		Code:    req.Code,
 		Name:    req.Name,
@@ -105,7 +136,7 @@ func toVendorDomain(req dto.CreateVendorRequest) domain.Vendor {
 	}
 }
 
-func toVendorResponse(vendor domain.Vendor) dto.VendorResponse {
+func (h *VendorHandler) toVendorResponse(vendor domain.Vendor) dto.VendorResponse {
 	return dto.VendorResponse{
 		ID:        vendor.ID,
 		Code:      vendor.Code,
@@ -116,5 +147,16 @@ func toVendorResponse(vendor domain.Vendor) dto.VendorResponse {
 		Active:    vendor.Active,
 		CreatedAt: vendor.CreatedAt,
 		UpdatedAt: vendor.UpdatedAt,
+	}
+}
+
+func (h *VendorHandler) toVendorsResponse(vendors []domain.Vendor) dto.VendorsResponse {
+	vendorsResponse := make([]dto.VendorResponse, 0, len(vendors))
+	for _, vendor := range vendors {
+		vendorsResponse = append(vendorsResponse, h.toVendorResponse(vendor))
+	}
+
+	return dto.VendorsResponse{
+		Items: vendorsResponse,
 	}
 }
