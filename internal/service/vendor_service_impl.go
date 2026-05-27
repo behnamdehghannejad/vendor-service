@@ -32,3 +32,12 @@ func (service *VendorServiceImpl) FindByID(id int) (*domain.Vendor, error) {
 func (service *VendorServiceImpl) FindByCode(code string) (*domain.Vendor, error) {
 	return service.repository.FindByCode(code)
 }
+
+func (service *VendorServiceImpl) IsActive(id int) error {
+	vendor, err := service.FindByID(id)
+	if err != nil {
+		return err
+	}
+
+	return domain.IsActiveVendor(vendor.Active)
+}

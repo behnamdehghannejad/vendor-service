@@ -28,3 +28,12 @@ func (service *ProductServiceImpl) Delete(id int) error {
 func (service *ProductServiceImpl) FindById(id int) (*domain.Product, error) {
 	return service.repository.FindById(id)
 }
+
+func (service *ProductServiceImpl) IsActive(id int) error {
+	product, err := service.FindById(id)
+	if err != nil {
+		return err
+	}
+
+	return domain.IsActiveProduct(product.Active)
+}

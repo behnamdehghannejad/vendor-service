@@ -1,18 +1,20 @@
 package domain
 
-import "time"
+import "errors"
 
-type VendorInventory struct {
+type Inventory struct {
 	ID       int
-	VendorID int
-	Vendor   Vendor `gorm:"foreignKey:VendorID"`
-
-	ProductID int
-	Product   Product `gorm:"foreignKey:ProductID"`
-
+	Vendor   Vendor
+	Product  Product
 	Quantity int
 	Reserved int
+}
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+func ValidateAndSetQuantity(inventory *Inventory, quantity int) error {
+	if quantity > inventory.Quantity {
+		return errors.New("inventory quantity is more than the order quantity")
+	}
+
+	inventory.Quantity -= quantity
+	return nil
 }

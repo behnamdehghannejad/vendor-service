@@ -1,4 +1,4 @@
-package repository
+package service
 
 import (
 	"vendor-service/internal/domain"
@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type InventoryRepository interface {
+type InventoryService interface {
 	FindByVendorIDAndProductID(vendorID int, productID int) (*domain.Inventory, error)
 	Update(inventory *domain.Inventory) error
 	FindByOrderID(orderID uuid.UUID) (*domain.Inventory, error)

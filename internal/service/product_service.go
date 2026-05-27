@@ -7,4 +7,5 @@ type ProductService interface {
 	Update(product *domain.Product) error
 	Delete(id int) error
 	FindById(id int) (*domain.Product, error)
+	IsActive(id int) error
 }
