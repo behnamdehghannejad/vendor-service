@@ -12,7 +12,7 @@ func NewProduct() *Product {
 	return &Product{}
 }
 
-func (v *Product) FindById(idStr string) error {
+func (v *Product) ValidateID(idStr string) error {
 	err := validation.Validate(
 		idStr,
 		validation.Required,
@@ -22,6 +22,7 @@ func (v *Product) FindById(idStr string) error {
 		return apperror.
 			Wrap(err).
 			BadRequest().
+			Log().
 			Build()
 	}
 	return nil

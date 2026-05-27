@@ -46,9 +46,9 @@ func (h *Product) Create(c *gin.Context) {
 }
 
 func (h *Product) GetById(c *gin.Context) {
-	idStr := c.Query("id")
+	idStr := c.Param("id")
 
-	err := h.validator.FindById(idStr)
+	err := h.validator.ValidateID(idStr)
 	if err != nil {
 		errorResponse, status := httperror.Handle(err)
 		c.JSON(status, errorResponse)
@@ -80,13 +80,16 @@ func (h *Product) Filter(c *gin.Context) {
 	c.JSON(http.StatusOK, h.serializeProducts(products))
 }
 
-func (h *Product) serializeProducts(products []domain.Product) []dto.ProductResponse {
+func (h *Product) serializeProducts(products []domain.Product) dto.ProductsResponse {
 	productsResponse := make([]dto.ProductResponse, 0, len(products))
 
 	for _, product := range products {
 		productsResponse = append(productsResponse, h.serializeProduct(product))
 	}
-	return productsResponse
+
+	return dto.ProductsResponse{
+		Items: productsResponse,
+	}
 }
 
 func (h *Product) serializeProduct(product domain.Product) dto.ProductResponse {

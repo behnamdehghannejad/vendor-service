@@ -24,7 +24,7 @@ type ProductResponse struct {
 }
 
 type ProductsResponse struct {
-	Items ProductResponse `json:"items"`
+	Items []ProductResponse `json:"items"`
 }
 
 type CreateVendorRequest struct {
