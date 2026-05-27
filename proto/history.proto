@@ -104,8 +104,6 @@ message DeleteHistoryRequest {
   int32 id = 1;
 }
 
-/* ===== FIXED REQUESTS ===== */
-
 message GetHistoryByOrderIDRequest {
   string id = 1;
 }
@@ -129,8 +127,6 @@ message GetHistoryByStatusRequest {
 message GetHistoryByActiveRequest {
   bool active = 1;
 }
-
-/* ===== RESPONSES ===== */
 
 message HistoryResponse {
   History history = 1;

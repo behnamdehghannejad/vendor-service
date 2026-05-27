@@ -11,7 +11,7 @@ type OrderServiceImpl struct {
 	historyService   HistoryService
 }
 
-func NewOrderServiceImpl(
+func NewOrderService(
 	inventoryService InventoryService,
 	productService ProductService,
 	vendorService VendorService,
@@ -45,9 +45,8 @@ func (service *OrderServiceImpl) handleOrder(order domain.Order) error {
 		return err
 	}
 
-	err2 := service.findAndUpdateInventory(order)
-	if err2 != nil {
-		return err2
+	if err := service.findAndUpdateInventory(order); err != nil {
+		return err
 	}
 
 	if err := service.historyService.Create(CreateHistoryByOrder(order)); err != nil {

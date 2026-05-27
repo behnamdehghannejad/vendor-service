@@ -96,3 +96,23 @@ func toVendorDomain(vendor *VendorEntity) *domain.Vendor {
 		UpdatedAt: vendor.UpdatedAt,
 	}
 }
+
+func toInventoryDomain(entity InventoryEntity) *domain.Inventory {
+	return &domain.Inventory{
+		ID:       entity.ID,
+		Vendor:   domain.Vendor(entity.Vendor),
+		Product:  domain.Product(entity.Product),
+		Quantity: entity.Quantity,
+		Reserved: entity.Reserved,
+	}
+}
+
+func toInventoryEntity(inventory *domain.Inventory) *InventoryEntity {
+	return &InventoryEntity{
+		ID:        inventory.ID,
+		ProductID: inventory.Product.ID,
+		VendorID:  inventory.Vendor.ID,
+		Quantity:  inventory.Quantity,
+		Reserved:  inventory.Reserved,
+	}
+}

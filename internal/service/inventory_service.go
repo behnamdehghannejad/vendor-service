@@ -7,6 +7,7 @@ import (
 )
 
 type InventoryService interface {
+	AddProductsToVendor(inventory *domain.Inventory) error
 	FindByVendorIDAndProductID(vendorID int, productID int) (*domain.Inventory, error)
 	Update(inventory *domain.Inventory) error
 	FindByOrderID(orderID uuid.UUID) (*domain.Inventory, error)

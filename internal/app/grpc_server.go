@@ -16,10 +16,13 @@ type Services struct {
 	History pb.HistoryServiceServer
 }
 
-func RunGrpcServer(grpcAddress string,
+func RunGrpcServer(
+	grpcAddress string,
 	vendorGrpcHandler handler.VendorGrpcHandler,
 	productGrpcHandler handler.ProductGrpcHandler,
 	historyGrpcHandler handler.HistoryGrpcHandler,
+	inventoryGrpcHandler handler.InventoryGrpcHandler,
+	orderGrpcHandler handler.OrderGrpcHandler,
 ) {
 	lis, err := net.Listen("tcp", grpcAddress)
 	if err != nil {
@@ -30,6 +33,8 @@ func RunGrpcServer(grpcAddress string,
 	pb.RegisterVendorServiceServer(grpcServer, &vendorGrpcHandler)
 	pb.RegisterProductServiceServer(grpcServer, &productGrpcHandler)
 	pb.RegisterHistoryServiceServer(grpcServer, &historyGrpcHandler)
+	pb.RegisterInventoryServiceServer(grpcServer, &inventoryGrpcHandler)
+	pb.RegisterOrderServiceServer(grpcServer, &orderGrpcHandler)
 
 	log.Println("gRPC server running on", grpcAddress)
 	if err := grpcServer.Serve(lis); err != nil {

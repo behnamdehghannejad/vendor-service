@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "vendor-service/proto/generate;proto";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+service OrderService {
+
+  rpc ManageOrders(ManageOrdersRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/order/manage"
+      body: "*"
+    };
+  }
+
+  rpc AcceptOrdersPayment(AcceptOrdersPaymentRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/order/payment"
+      body: "*"
+    };
+  }
+}
+
+message Order {
+  string orderId = 1;
+  string paymentId = 2;
+  int32 quantity = 3;
+  int32 productId = 4;
+  int32 vendorId = 5;
+}
+
+message ManageOrdersRequest {
+  repeated Order orders = 1;
+}
+
+message AcceptOrdersPaymentRequest {
+  repeated Order orders = 1;
+}

@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "vendor-service/proto/generate;proto";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+service InventoryService {
+  rpc AddProductsToVendor(AddProductsToVendorRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/inventory/create"
+      body: "*"
+    };
+  }
+}
+
+message AddProductsToVendorRequest {
+  int32 productId = 1;
+  int32 vendorId = 2;
+  int32 quantity = 3;
+}

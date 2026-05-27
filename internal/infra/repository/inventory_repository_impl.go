@@ -31,6 +31,10 @@ func NewInventoryRepositoryImpl(db *gorm.DB) *InventoryRepositoryImpl {
 	}
 }
 
+func (repo *InventoryRepositoryImpl) Add(inventory *domain.Inventory) error {
+	return repo.db.Create(toInventoryEntity(inventory)).Error
+}
+
 func (repo *InventoryRepositoryImpl) FindByVendorIDAndProductID(vendorID int, productID int) (*domain.Inventory, error) {
 	var inventoryEntity InventoryEntity
 	if err := repo.db.Where("vendor_id = ? AND product_id = ?", vendorID, productID).First(inventoryEntity).Error; err != nil {
@@ -51,14 +55,4 @@ func (repo *InventoryRepositoryImpl) FindByOrderID(orderID uuid.UUID) (*domain.I
 		return nil, err
 	}
 	return toInventoryDomain(inventory), nil
-}
-
-func toInventoryDomain(entity InventoryEntity) *domain.Inventory {
-	return &domain.Inventory{
-		ID:       entity.ID,
-		Vendor:   domain.Vendor(entity.Vendor),
-		Product:  domain.Product(entity.Product),
-		Quantity: entity.Quantity,
-		Reserved: entity.Reserved,
-	}
 }
