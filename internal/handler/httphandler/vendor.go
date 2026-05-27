@@ -91,7 +91,7 @@ func (h *Vendor) Delete(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusOK)
+	c.Status(http.StatusNoContent)
 }
 
 func (h *Vendor) Filter(c *gin.Context) {
