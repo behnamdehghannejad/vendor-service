@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package proto;
 
-option go_package = "github.com/behnamdehghannejad/vendor/proto/generate;proto";
+option go_package = "github.com/behnamdehghannejad/vendorservice/proto/generate;proto";
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";

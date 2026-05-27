@@ -1,25 +1,12 @@
-package app
+package config
 
 import (
 	"log"
 	"os"
 
-	"github.com/behnamdehghannejad/vendorservice/internal/handler/httphandler"
-	"github.com/behnamdehghannejad/vendorservice/internal/infra/postgres"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/apperror"
 	"github.com/spf13/viper"
 )
-
-type Config struct {
-	App      httphandler.HttpConfig
-	GRPC     GRPCConfig
-	Database postgres.PostgresConfig
-}
-
-type GRPCConfig struct {
-	Host string
-	Port int
-}
 
 func Load() (Config, error) {
 	env := os.Getenv("APP_ENV")
