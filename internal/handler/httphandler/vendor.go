@@ -66,7 +66,7 @@ func (h *Vendor) GetById(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, h.toVendorResponse(vendor))
+	c.JSON(http.StatusOK, h.serializeVendor(vendor))
 }
 
 func (h *Vendor) Delete(c *gin.Context) {
@@ -110,7 +110,7 @@ func (h *Vendor) Filter(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, h.toVendorsResponse(vendors))
+	c.JSON(http.StatusOK, h.serializeVendors(vendors))
 }
 
 func (h *Vendor) GetIsActiveFromQuery(activeStr string) *bool {
@@ -136,7 +136,7 @@ func (h *Vendor) toVendorDomain(req dto.CreateVendorRequest) domain.Vendor {
 	}
 }
 
-func (h *Vendor) toVendorResponse(vendor domain.Vendor) dto.VendorResponse {
+func (h *Vendor) serializeVendor(vendor domain.Vendor) dto.VendorResponse {
 	return dto.VendorResponse{
 		ID:        vendor.ID,
 		Code:      vendor.Code,
@@ -150,10 +150,10 @@ func (h *Vendor) toVendorResponse(vendor domain.Vendor) dto.VendorResponse {
 	}
 }
 
-func (h *Vendor) toVendorsResponse(vendors []domain.Vendor) dto.VendorsResponse {
+func (h *Vendor) serializeVendors(vendors []domain.Vendor) dto.VendorsResponse {
 	vendorsResponse := make([]dto.VendorResponse, 0, len(vendors))
 	for _, vendor := range vendors {
-		vendorsResponse = append(vendorsResponse, h.toVendorResponse(vendor))
+		vendorsResponse = append(vendorsResponse, h.serializeVendor(vendor))
 	}
 
 	return dto.VendorsResponse{

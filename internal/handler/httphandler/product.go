@@ -62,7 +62,7 @@ func (h *Product) GetById(c *gin.Context) {
 		c.JSON(status, errorResponse)
 		return
 	}
-	c.JSON(http.StatusOK, h.toProductResponse(product))
+	c.JSON(http.StatusOK, h.serializeProduct(product))
 }
 
 func (h *Product) Filter(c *gin.Context) {
@@ -77,19 +77,19 @@ func (h *Product) Filter(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, h.toProductsResponse(products))
+	c.JSON(http.StatusOK, h.serializeProducts(products))
 }
 
-func (h *Product) toProductsResponse(products []domain.Product) []dto.ProductResponse {
+func (h *Product) serializeProducts(products []domain.Product) []dto.ProductResponse {
 	productsResponse := make([]dto.ProductResponse, 0, len(products))
 
 	for _, product := range products {
-		productsResponse = append(productsResponse, h.toProductResponse(product))
+		productsResponse = append(productsResponse, h.serializeProduct(product))
 	}
 	return productsResponse
 }
 
-func (h *Product) toProductResponse(product domain.Product) dto.ProductResponse {
+func (h *Product) serializeProduct(product domain.Product) dto.ProductResponse {
 	return dto.ProductResponse{
 		ID:          product.ID,
 		Name:        product.Name,
