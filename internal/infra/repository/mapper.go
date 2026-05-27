@@ -2,7 +2,8 @@ package repository
 
 import (
 	"time"
-	"vendor-service/internal/domain"
+
+	"github.com/behnamdehghannejad/vendor/internal/domain"
 )
 
 func toHistoryEntity(domain *domain.History) *HistoryEntity {

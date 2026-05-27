@@ -1,6 +1,6 @@
 package main
 
-import "vendor-service/internal/app"
+import "github.com/behnamdehghannejad/vendor/internal/app"
 
 func main() {
 	err := app.Start()

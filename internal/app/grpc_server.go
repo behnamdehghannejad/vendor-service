@@ -3,9 +3,10 @@ package app
 import (
 	"log"
 	"net"
-	"vendor-service/internal/handler/grpc"
 
-	pb "vendor-service/proto/generate"
+	handler "github.com/behnamdehghannejad/vendor/internal/handler/grpc"
+
+	pb "github.com/behnamdehghannejad/vendor/proto/generate"
 
 	"google.golang.org/grpc"
 )

@@ -3,9 +3,10 @@ package handler
 import (
 	"context"
 	"time"
-	"vendor-service/internal/domain"
-	"vendor-service/internal/service"
-	pb "vendor-service/proto/generate"
+
+	"github.com/behnamdehghannejad/vendor/internal/domain"
+	"github.com/behnamdehghannejad/vendor/internal/service"
+	pb "github.com/behnamdehghannejad/vendor/proto/generate"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -22,7 +23,6 @@ func NewVendorGrpcHandler(service service.VendorService) *VendorGrpcHandler {
 }
 
 func (handler *VendorGrpcHandler) Add(ctx context.Context, request *pb.CreateVendorRequest) (*emptypb.Empty, error) {
-
 	requestDto := vendorProtoToDomain(request)
 
 	if err := handler.service.Create(requestDto); err != nil {
@@ -33,7 +33,6 @@ func (handler *VendorGrpcHandler) Add(ctx context.Context, request *pb.CreateVen
 }
 
 func (handler *VendorGrpcHandler) Update(ctx context.Context, request *pb.UpdateVendorRequest) (*emptypb.Empty, error) {
-
 	vendor := toVendorDomain(request.Vendor)
 
 	if err := handler.service.Update(vendor); err != nil {
@@ -52,7 +51,6 @@ func (handler *VendorGrpcHandler) Delete(ctx context.Context, request *pb.Delete
 }
 
 func (handler *VendorGrpcHandler) FindByID(ctx context.Context, request *pb.GetVendorRequest) (*pb.VendorResponse, error) {
-
 	vendor, err := handler.service.FindByID(int(request.Id))
 	if err != nil {
 		return nil, err
@@ -64,7 +62,6 @@ func (handler *VendorGrpcHandler) FindByID(ctx context.Context, request *pb.GetV
 }
 
 func (handler *VendorGrpcHandler) FindByCode(ctx context.Context, request *pb.GetCodeRequest) (*pb.VendorResponse, error) {
-
 	vendor, err := handler.service.FindByCode(request.Code)
 	if err != nil {
 		return nil, err

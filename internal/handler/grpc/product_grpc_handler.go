@@ -3,9 +3,10 @@ package handler
 import (
 	"context"
 	"time"
-	"vendor-service/internal/domain"
-	"vendor-service/internal/service"
-	pb "vendor-service/proto/generate"
+
+	"github.com/behnamdehghannejad/vendor/internal/domain"
+	"github.com/behnamdehghannejad/vendor/internal/service"
+	pb "github.com/behnamdehghannejad/vendor/proto/generate"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -32,7 +33,6 @@ func (handler *ProductGrpcHandler) Add(ctx context.Context, request *pb.CreatePr
 }
 
 func (handler *ProductGrpcHandler) Update(ctx context.Context, request *pb.UpdateProductRequest) (*emptypb.Empty, error) {
-
 	product := toProductProtoDomain(request.Product)
 
 	if err := handler.service.Update(product); err != nil {
@@ -51,7 +51,6 @@ func (handler *ProductGrpcHandler) Delete(ctx context.Context, request *pb.Delet
 }
 
 func (handler *ProductGrpcHandler) FindById(ctx context.Context, request *pb.GetProductRequest) (*pb.ProductResponse, error) {
-
 	product, err := handler.service.FindById(int(request.Id))
 	if err != nil {
 		return nil, err

@@ -1,6 +1,6 @@
 package service
 
-import "vendor-service/internal/domain"
+import "github.com/behnamdehghannejad/vendor/internal/domain"
 
 type ProductService interface {
 	Create(product *domain.Product) error

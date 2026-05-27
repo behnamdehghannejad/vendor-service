@@ -1,4 +1,4 @@
-module vendor-service
+module github.com/behnamdehghannejad/vendor
 
 go 1.24.0
 

@@ -1,7 +1,7 @@
 package service
 
 import (
-	"vendor-service/internal/domain"
+	"github.com/behnamdehghannejad/vendor/internal/domain"
 
 	"github.com/google/uuid"
 )

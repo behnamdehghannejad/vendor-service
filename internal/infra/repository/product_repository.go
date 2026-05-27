@@ -1,6 +1,6 @@
 package repository
 
-import "vendor-service/internal/domain"
+import "github.com/behnamdehghannejad/vendor/internal/domain"
 
 type ProductRepository interface {
 	Add(product *domain.Product) error

@@ -1,8 +1,9 @@
 package service
 
 import (
-	"vendor-service/internal/domain"
-	"vendor-service/internal/infra/repository"
+	"github.com/behnamdehghannejad/vendor/internal/domain"
+
+	"github.com/behnamdehghannejad/vendor/internal/infra/repository"
 )
 
 type VendorServiceImpl struct {

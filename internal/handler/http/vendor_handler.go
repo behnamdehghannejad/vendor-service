@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"vendor-service/internal/domain"
-	"vendor-service/internal/handler/dto"
-	"vendor-service/internal/service"
+	"github.com/behnamdehghannejad/vendor/internal/domain"
+	"github.com/behnamdehghannejad/vendor/internal/handler/dto"
+	"github.com/behnamdehghannejad/vendor/internal/service"
 )
 
 type VendorHandler struct {
