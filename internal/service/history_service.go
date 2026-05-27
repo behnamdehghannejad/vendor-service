@@ -15,38 +15,38 @@ func NewHistoryService(repository port.HistoryRepository) *HistoryServiceImpl {
 	return &HistoryServiceImpl{repository: repository}
 }
 
-func (service *HistoryServiceImpl) Create(history domain.History) error {
-	return service.repository.Add(history)
+func (s *HistoryServiceImpl) Create(history domain.History) error {
+	return s.repository.Add(history)
 }
 
-func (service *HistoryServiceImpl) Update(history domain.History) error {
-	return service.repository.Update(history)
+func (s *HistoryServiceImpl) Update(history domain.History) error {
+	return s.repository.Update(history)
 }
 
-func (service *HistoryServiceImpl) Delete(id int) error {
-	return service.repository.Delete(id)
+func (s *HistoryServiceImpl) Delete(id int) error {
+	return s.repository.Delete(id)
 }
 
-func (service *HistoryServiceImpl) FindByOrderID(id uuid.UUID) (domain.History, error) {
-	return service.repository.FindByOrderID(id)
+func (s *HistoryServiceImpl) FindByOrderID(id uuid.UUID) (domain.History, error) {
+	return s.repository.FindByOrderID(id)
 }
 
-func (service *HistoryServiceImpl) FindByPaymentID(paymentID uuid.UUID) (domain.History, error) {
-	return service.repository.FindByPaymentID(paymentID)
+func (s *HistoryServiceImpl) FindByPaymentID(paymentID uuid.UUID) (domain.History, error) {
+	return s.repository.FindByPaymentID(paymentID)
 }
 
-func (service *HistoryServiceImpl) FindByProductID(productID int) ([]domain.History, error) {
-	return service.repository.FindByProductID(productID)
+func (s *HistoryServiceImpl) FindByProductID(productID int) ([]domain.History, error) {
+	return s.repository.FindByProductID(productID)
 }
 
-func (service *HistoryServiceImpl) FindByVendorID(vendorID int) ([]domain.History, error) {
-	return service.repository.FindByVendorID(vendorID)
+func (s *HistoryServiceImpl) FindByVendorID(vendorID int) ([]domain.History, error) {
+	return s.repository.FindByVendorID(vendorID)
 }
 
-func (service *HistoryServiceImpl) FindByStatus(status domain.Status) ([]domain.History, error) {
+func (s *HistoryServiceImpl) FindByStatus(status domain.Status) ([]domain.History, error) {
 	panic("implement me")
 }
 
-func (service *HistoryServiceImpl) FindByIsActive(isActive bool) ([]domain.History, error) {
+func (s *HistoryServiceImpl) FindByIsActive(isActive bool) ([]domain.History, error) {
 	panic("implement me")
 }

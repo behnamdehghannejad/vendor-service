@@ -12,7 +12,7 @@ type Vendor struct {
 	vendor port.VendorService
 }
 
-func NewVendorValidator(vendorService port.VendorService) *Vendor {
+func NewVendor(vendorService port.VendorService) *Vendor {
 	return &Vendor{
 		vendor: vendorService,
 	}

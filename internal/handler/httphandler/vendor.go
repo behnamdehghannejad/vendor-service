@@ -12,19 +12,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type VendorHandler struct {
+type Vendor struct {
 	service   port.VendorService
 	validator *validator.Vendor
 }
 
-func NewVendorHandler(service port.VendorService, validator *validator.Vendor) *VendorHandler {
-	return &VendorHandler{
+func NewVendorHandler(service port.VendorService, validator *validator.Vendor) *Vendor {
+	return &Vendor{
 		service:   service,
 		validator: validator,
 	}
 }
 
-func (h *VendorHandler) Create(c *gin.Context) {
+func (h *Vendor) Create(c *gin.Context) {
 	var req dto.CreateVendorRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -49,7 +49,7 @@ func (h *VendorHandler) Create(c *gin.Context) {
 	c.Status(http.StatusCreated)
 }
 
-func (h *VendorHandler) GetById(c *gin.Context) {
+func (h *Vendor) GetById(c *gin.Context) {
 	idStr := c.Param("id")
 
 	id, err := strconv.Atoi(idStr)
@@ -69,7 +69,7 @@ func (h *VendorHandler) GetById(c *gin.Context) {
 	c.JSON(http.StatusOK, h.toVendorResponse(vendor))
 }
 
-func (h *VendorHandler) Delete(c *gin.Context) {
+func (h *Vendor) Delete(c *gin.Context) {
 	idStr := c.Param("id")
 
 	id, err := strconv.Atoi(idStr)
@@ -94,7 +94,7 @@ func (h *VendorHandler) Delete(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func (h *VendorHandler) Filter(c *gin.Context) {
+func (h *Vendor) Filter(c *gin.Context) {
 	code := c.Query("code")
 	searchName := c.Query("search_name")
 	isActive := h.GetIsActiveFromQuery(c.Query("active"))
@@ -113,7 +113,7 @@ func (h *VendorHandler) Filter(c *gin.Context) {
 	c.JSON(http.StatusOK, h.toVendorsResponse(vendors))
 }
 
-func (h *VendorHandler) GetIsActiveFromQuery(activeStr string) *bool {
+func (h *Vendor) GetIsActiveFromQuery(activeStr string) *bool {
 	active := true
 	deActive := false
 	switch activeStr {
@@ -125,7 +125,7 @@ func (h *VendorHandler) GetIsActiveFromQuery(activeStr string) *bool {
 	return nil
 }
 
-func (h *VendorHandler) toVendorDomain(req dto.CreateVendorRequest) domain.Vendor {
+func (h *Vendor) toVendorDomain(req dto.CreateVendorRequest) domain.Vendor {
 	return domain.Vendor{
 		Code:    req.Code,
 		Name:    req.Name,
@@ -136,7 +136,7 @@ func (h *VendorHandler) toVendorDomain(req dto.CreateVendorRequest) domain.Vendo
 	}
 }
 
-func (h *VendorHandler) toVendorResponse(vendor domain.Vendor) dto.VendorResponse {
+func (h *Vendor) toVendorResponse(vendor domain.Vendor) dto.VendorResponse {
 	return dto.VendorResponse{
 		ID:        vendor.ID,
 		Code:      vendor.Code,
@@ -150,7 +150,7 @@ func (h *VendorHandler) toVendorResponse(vendor domain.Vendor) dto.VendorRespons
 	}
 }
 
-func (h *VendorHandler) toVendorsResponse(vendors []domain.Vendor) dto.VendorsResponse {
+func (h *Vendor) toVendorsResponse(vendors []domain.Vendor) dto.VendorsResponse {
 	vendorsResponse := make([]dto.VendorResponse, 0, len(vendors))
 	for _, vendor := range vendors {
 		vendorsResponse = append(vendorsResponse, h.toVendorResponse(vendor))

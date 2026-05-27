@@ -7,4 +7,5 @@ type ProductService interface {
 	Update(domain.Product) error
 	Delete(int) error
 	FindById(int) (domain.Product, error)
+	Filter(domain.SearchProduct) ([]domain.Product, error)
 }

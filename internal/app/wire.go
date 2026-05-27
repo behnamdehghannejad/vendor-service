@@ -34,12 +34,12 @@ func Run() {
 		return
 	}
 
-	_, vendorService, _, err := registerServices(cfg.Database)
+	_, vendorService, productService, err := registerServices(cfg.Database)
 	if err != nil {
 		return
 	}
 
-	server := createServer(cfg.App, vendorService)
+	server := createServer(cfg.App, vendorService, productService)
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
@@ -102,6 +102,7 @@ func shutdownServer(server *http.Server) {
 func createServer(
 	cfg httphandler.HttpConfig,
 	vendorService port.VendorService,
+	productService port.ProductService,
 ) *http.Server {
 	gin.SetMode(gin.ReleaseMode)
 
@@ -109,12 +110,17 @@ func createServer(
 
 	router.Use(gin.Recovery())
 
-	orderHandler := httphandler.NewVendorHandler(
+	vendorHandler := httphandler.NewVendorHandler(
 		vendorService,
-		validator.NewVendorValidator(vendorService),
+		validator.NewVendor(vendorService),
 	)
 
-	registerRoutes(router, orderHandler)
+	productHandler := httphandler.NewProductHandler(
+		productService,
+		validator.NewProduct(),
+	)
+
+	registerRoutes(router, vendorHandler, productHandler)
 
 	return &http.Server{
 		Addr:              getAddress(cfg.Host, cfg.Port),
@@ -128,12 +134,17 @@ func createServer(
 
 func registerRoutes(
 	router *gin.Engine,
-	vendorHandler *httphandler.VendorHandler,
+	vendorHandler *httphandler.Vendor,
+	productHandler *httphandler.Product,
 ) {
 	router.POST("/api/v1/vendors", vendorHandler.Create)
 	router.GET("/api/v1/vendors/:id", vendorHandler.GetById)
 	router.DELETE("/api/v1/vendors/:id", vendorHandler.Delete)
 	router.GET("/api/v1/vendors", vendorHandler.Filter)
+
+	router.POST("/api/v1/products", productHandler.Create)
+	router.GET("/api/v1/products/:id", productHandler.GetById)
+	router.GET("api/v1/products", productHandler.Filter)
 }
 
 func getAddress(host string, port string) string {

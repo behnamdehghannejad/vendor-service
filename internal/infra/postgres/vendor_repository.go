@@ -64,7 +64,7 @@ func (repo *VendorRepository) Delete(id int) error {
 func (repo *VendorRepository) Filter(filter domain.SearchVendor) ([]domain.Vendor, error) {
 	var vendorsEntity []VendorEntity
 
-	query := repo.db.Model(&HistoryEntity{})
+	query := repo.db.Model(&ProductEntity{})
 
 	if filter.IsActive != nil {
 		query = query.Where("active = ?", *filter.IsActive)
@@ -75,7 +75,7 @@ func (repo *VendorRepository) Filter(filter domain.SearchVendor) ([]domain.Vendo
 	}
 
 	if filter.SearchName != "" {
-		query = query.Where("name ILIKE ?", "%"+filter.SearchName+"%")
+		query = query.Where("name LIKE ?", "%"+filter.SearchName+"%")
 	}
 
 	err := query.Find(&vendorsEntity).Error

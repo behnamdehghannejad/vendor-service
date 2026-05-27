@@ -52,6 +52,22 @@ func (repo *ProductRepository) Delete(id int) error {
 	return nil
 }
 
+func (repo *ProductRepository) Filter(filter domain.SearchProduct) ([]domain.Product, error) {
+	var productsEntity []ProductEntity
+
+	query := repo.db.Model(&ProductEntity{})
+
+	if filter.SearchName != "" {
+		query = query.Where("name LIKE ?", "%"+filter.SearchName+"%")
+	}
+
+	err := query.Find(&productsEntity).Error
+	if err != nil {
+		return nil, convertPostgresErrorToAppError(err)
+	}
+	return repo.toProductsDomain(productsEntity), nil
+}
+
 func (repo *ProductRepository) FindById(id int) (domain.Product, error) {
 	var product ProductEntity
 	if err := repo.db.Where("id = ?", id).First(&product).Error; err != nil {
@@ -59,6 +75,14 @@ func (repo *ProductRepository) FindById(id int) (domain.Product, error) {
 	}
 
 	return repo.toProductDomain(product), nil
+}
+
+func (repo *ProductRepository) toProductsDomain(productsEntity []ProductEntity) []domain.Product {
+	products := make([]domain.Product, 0, len(productsEntity))
+	for _, product := range productsEntity {
+		products = append(products, repo.toProductDomain(product))
+	}
+	return products
 }
 
 func (repo *ProductRepository) toProductDomain(product ProductEntity) domain.Product {

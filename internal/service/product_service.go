@@ -13,18 +13,22 @@ func NewProductService(repository port.ProductRepository) *ProductService {
 	return &ProductService{repository: repository}
 }
 
-func (service *ProductService) Create(product domain.Product) error {
-	return service.repository.Add(product)
+func (s *ProductService) Create(product domain.Product) error {
+	return s.repository.Add(product)
 }
 
-func (service *ProductService) Update(product domain.Product) error {
-	return service.repository.Update(product)
+func (s *ProductService) Update(product domain.Product) error {
+	return s.repository.Update(product)
 }
 
-func (service *ProductService) Delete(id int) error {
-	return service.repository.Delete(id)
+func (s *ProductService) Delete(id int) error {
+	return s.repository.Delete(id)
 }
 
-func (service *ProductService) FindById(id int) (domain.Product, error) {
-	return service.repository.FindById(id)
+func (s *ProductService) FindById(id int) (domain.Product, error) {
+	return s.repository.FindById(id)
+}
+
+func (s *ProductService) Filter(filter domain.SearchProduct) ([]domain.Product, error) {
+	return s.repository.Filter(filter)
 }
