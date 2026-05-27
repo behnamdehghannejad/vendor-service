@@ -42,18 +42,21 @@ func (repo *ProductRepository) Update(domain domain.Product) error {
 func (repo *ProductRepository) Delete(id int) error {
 	var product ProductEntity
 	if err := repo.db.Where("id = ?", id).First(&product).Error; err != nil {
-		return err
+		return convertPostgresErrorToAppError(err)
 	}
 
 	product.UpdatedAt = time.Now()
 	product.Active = false
-	return repo.db.Save(&product).Error
+	if err := repo.db.Delete(&product).Error; err != nil {
+		return convertPostgresErrorToAppError(err)
+	}
+	return nil
 }
 
 func (repo *ProductRepository) FindById(id int) (domain.Product, error) {
 	var product ProductEntity
 	if err := repo.db.Where("id = ?", id).First(&product).Error; err != nil {
-		return domain.Product{}, err
+		return domain.Product{}, convertPostgresErrorToAppError(err)
 	}
 
 	return repo.toProductDomain(product), nil

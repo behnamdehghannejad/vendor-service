@@ -37,17 +37,15 @@ func NewHistoryRepository(db *gorm.DB) *HistoryRepository {
 }
 
 func (repo *HistoryRepository) Add(history domain.History) error {
-	err := repo.db.Create(repo.toHistoryEntity(history)).Error
-	if err != nil {
-		convertPostgresErrorToAppError(err)
+	if err := repo.db.Create(repo.toHistoryEntity(history)).Error; err != nil {
+		return convertPostgresErrorToAppError(err)
 	}
 	return nil
 }
 
 func (repo *HistoryRepository) Update(history domain.History) error {
-	err := repo.db.Save(repo.toHistoryEntity(history)).Error
-	if err != nil {
-		convertPostgresErrorToAppError(err)
+	if err := repo.db.Save(repo.toHistoryEntity(history)).Error; err != nil {
+		return convertPostgresErrorToAppError(err)
 	}
 	return nil
 }

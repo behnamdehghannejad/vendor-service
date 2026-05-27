@@ -35,27 +35,36 @@ func NewVendorRepository(db *gorm.DB) *VendorRepository {
 }
 
 func (repo *VendorRepository) Add(domain domain.Vendor) error {
-	return repo.db.Create(repo.toVendorEntity(domain)).Error
+	if err := repo.db.Create(repo.toVendorEntity(domain)).Error; err != nil {
+		return convertPostgresErrorToAppError(err, domain)
+	}
+	return nil
 }
 
 func (repo *VendorRepository) Update(domain domain.Vendor) error {
-	return repo.db.Save(domain).Error
+	if err := repo.db.Save(domain).Error; err != nil {
+		return convertPostgresErrorToAppError(err, domain)
+	}
+	return nil
 }
 
 func (repo *VendorRepository) Delete(id int) error {
 	var vendor VendorEntity
 	if err := repo.db.Where("id = ?", id).First(&vendor).Error; err != nil {
-		return err
+		return convertPostgresErrorToAppError(err, id)
 	}
 	vendor.UpdatedAt = time.Now()
 	vendor.Active = false
-	return repo.db.Save(vendor).Error
+	if err := repo.db.Delete(vendor).Error; err != nil {
+		return convertPostgresErrorToAppError(err, id)
+	}
+	return nil
 }
 
 func (repo *VendorRepository) FindByID(id int) (domain.Vendor, error) {
 	var vendor VendorEntity
 	if err := repo.db.Where("id = ?", id).First(&vendor).Error; err != nil {
-		return domain.Vendor{}, err
+		return domain.Vendor{}, convertPostgresErrorToAppError(err)
 	}
 	return repo.toVendorDomain(vendor), nil
 }
@@ -63,7 +72,7 @@ func (repo *VendorRepository) FindByID(id int) (domain.Vendor, error) {
 func (repo *VendorRepository) FindByCode(code string) (domain.Vendor, error) {
 	var vendor VendorEntity
 	if err := repo.db.Where("code = ?", code).Find(&vendor).Error; err != nil {
-		return domain.Vendor{}, err
+		return domain.Vendor{}, convertPostgresErrorToAppError(err)
 	}
 	return repo.toVendorDomain(vendor), nil
 }
