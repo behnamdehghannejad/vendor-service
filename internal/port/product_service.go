@@ -3,8 +3,8 @@ package port
 import "github.com/behnamdehghannejad/vendorservice/internal/domain"
 
 type ProductService interface {
-	Create(product domain.Product) error
-	Update(product domain.Product) error
-	Delete(id int) error
-	FindById(id int) (domain.Product, error)
+	Create(domain.Product) error
+	Update(domain.Product) error
+	Delete(int) error
+	FindById(int) (domain.Product, error)
 }
