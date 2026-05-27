@@ -18,7 +18,7 @@ type Vendor struct {
 }
 
 func IsActiveVendor(isActive bool) error {
-	if isActive {
+	if !isActive {
 		return errors.New("vendor is inactive")
 	}
 	return nil

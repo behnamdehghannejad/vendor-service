@@ -15,7 +15,7 @@ type Product struct {
 }
 
 func IsActiveProduct(isActive bool) error {
-	if isActive {
+	if !isActive {
 		return errors.New("vendor is inactive")
 	}
 	return nil

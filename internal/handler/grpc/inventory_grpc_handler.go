@@ -30,12 +30,8 @@ func (handler *InventoryGrpcHandler) AddProductsToVendor(ctx context.Context, re
 
 func toInventoryDomain(request *pb.AddProductsToVendorRequest) *domain.Inventory {
 	return &domain.Inventory{
-		Product: domain.Product{
-			ID: int(request.ProductId),
-		},
-		Vendor: domain.Vendor{
-			ID: int(request.VendorId),
-		},
-		Quantity: int(request.Quantity),
+		ProductID: int(request.ProductId),
+		VendorID:  int(request.VendorId),
+		Quantity:  int(request.Quantity),
 	}
 }

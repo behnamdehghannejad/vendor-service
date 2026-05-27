@@ -107,7 +107,6 @@ func toProductDomain(req dto.CreateProductRequest) *domain.Product {
 
 func toUpdateProductDomain(req dto.UpdateProductRequest) *domain.Product {
 	return &domain.Product{
-		ID:          req.ID,
 		Name:        req.Name,
 		Description: req.Description,
 		Active:      req.Active,

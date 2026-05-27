@@ -75,41 +75,27 @@ func (service *OrderServiceImpl) findAndUpdateInventory(order domain.Order) erro
 
 func (service *OrderServiceImpl) AcceptOrdersPayment(orders *domain.ListOrder) error {
 	for _, order := range orders.Orders {
-		if err := service.updateInventory(order); err != nil {
+		history, err := service.historyService.FindByOrderID(order.OrderID)
+		if err != nil {
 			return err
 		}
 
-		if err := service.updateHistory(order); err != nil {
+		history.Status = domain.PAID
+		history.PaymentID = order.PaymentID
+		if err := service.historyService.Update(history); err != nil {
+			return err
+		}
+
+		inventory, err := service.inventoryService.FindByVendorIDAndProductID(history.VendorID, history.ProductID)
+		if err != nil {
+			return err
+		}
+
+		inventory.Reserved -= history.Quantity
+		if err := service.inventoryService.Update(inventory); err != nil {
 			return err
 		}
 	}
 
-	return nil
-}
-
-func (service *OrderServiceImpl) updateInventory(order domain.Order) error {
-	inventory, err := service.inventoryService.FindByOrderID(order.OrderID)
-	if err != nil {
-		return err
-	}
-
-	inventory.Reserved -= order.Quantity
-	if err := service.inventoryService.Update(inventory); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (service *OrderServiceImpl) updateHistory(order domain.Order) error {
-	history, err := service.historyService.FindByOrderID(order.OrderID)
-	if err != nil {
-		return err
-	}
-
-	history.Status = domain.PAID
-	history.PaymentID = order.PaymentID
-	if err := service.historyService.Update(history); err != nil {
-		return err
-	}
 	return nil
 }

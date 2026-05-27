@@ -37,13 +37,9 @@ func (handler *InventoryHandler) AddProductsToVendor(writer http.ResponseWriter,
 
 func toInventoryDomain(req dto.AddProductsToVendorRequest) *domain.Inventory {
 	return &domain.Inventory{
-		Vendor: domain.Vendor{
-			ID: req.VendorID,
-		},
-		Product: domain.Product{
-			ID: req.ProductID,
-		},
-		Quantity: req.Quantity,
-		Reserved: 0,
+		VendorID:  req.VendorID,
+		ProductID: req.ProductID,
+		Quantity:  req.Quantity,
+		Reserved:  0,
 	}
 }

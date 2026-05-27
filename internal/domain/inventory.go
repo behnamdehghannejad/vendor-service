@@ -1,13 +1,15 @@
 package domain
 
-import "errors"
+import (
+	"errors"
+)
 
 type Inventory struct {
-	ID       int
-	Vendor   Vendor
-	Product  Product
-	Quantity int
-	Reserved int
+	ID        int
+	VendorID  int
+	ProductID int
+	Quantity  int
+	Reserved  int
 }
 
 func ValidateAndSetQuantity(inventory *Inventory, quantity int) error {

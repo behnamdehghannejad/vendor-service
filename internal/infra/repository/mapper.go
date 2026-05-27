@@ -13,6 +13,7 @@ func toHistoryEntity(domain *domain.History) *HistoryEntity {
 		ProductID: domain.ProductID,
 		VendorID:  domain.VendorID,
 		Active:    domain.Active,
+		Status:    domain.Status,
 		CreatedAt: time.Now(),
 	}
 }
@@ -99,19 +100,19 @@ func toVendorDomain(vendor *VendorEntity) *domain.Vendor {
 
 func toInventoryDomain(entity InventoryEntity) *domain.Inventory {
 	return &domain.Inventory{
-		ID:       entity.ID,
-		Vendor:   domain.Vendor(entity.Vendor),
-		Product:  domain.Product(entity.Product),
-		Quantity: entity.Quantity,
-		Reserved: entity.Reserved,
+		ID:        entity.ID,
+		VendorID:  entity.VendorID,
+		ProductID: entity.ProductID,
+		Quantity:  entity.Quantity,
+		Reserved:  entity.Reserved,
 	}
 }
 
 func toInventoryEntity(inventory *domain.Inventory) *InventoryEntity {
 	return &InventoryEntity{
 		ID:        inventory.ID,
-		ProductID: inventory.Product.ID,
-		VendorID:  inventory.Vendor.ID,
+		ProductID: inventory.ProductID,
+		VendorID:  inventory.VendorID,
 		Quantity:  inventory.Quantity,
 		Reserved:  inventory.Reserved,
 	}

@@ -8,7 +8,6 @@ type CreateProductRequest struct {
 }
 
 type UpdateProductRequest struct {
-	ID          int    `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Active      bool   `json:"active"`
