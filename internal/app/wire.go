@@ -13,10 +13,12 @@ import (
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/apperror"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/config"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/log"
+	"github.com/behnamdehghannejad/vendorservice/internal/pkg/metrics"
 	"github.com/behnamdehghannejad/vendorservice/internal/port"
 	"github.com/behnamdehghannejad/vendorservice/internal/service"
 	"github.com/behnamdehghannejad/vendorservice/internal/validator"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func Run() {
@@ -30,6 +32,7 @@ func Run() {
 		return
 	}
 
+	metrics.Init()
 	if err := migrate(cfg.Database); err != nil {
 		return
 	}
@@ -109,6 +112,7 @@ func createServer(
 	router := gin.New()
 
 	router.Use(gin.Recovery())
+	router.Use(metrics.PrometheusMiddleware())
 
 	vendorHandler := httphandler.NewVendorHandler(
 		vendorService,
@@ -121,6 +125,8 @@ func createServer(
 	)
 
 	registerRoutes(router, vendorHandler, productHandler)
+
+	registerMetrics(router)
 
 	return &http.Server{
 		Addr:              getAddress(cfg.Host, cfg.Port),
@@ -145,6 +151,14 @@ func registerRoutes(
 	router.POST("/api/v1/products", productHandler.Create)
 	router.GET("/api/v1/products/:id", productHandler.GetById)
 	router.GET("api/v1/products", productHandler.Filter)
+}
+
+func registerMetrics(router *gin.Engine) {
+	router.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{"pong": true})
+	})
+
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 }
 
 func getAddress(host string, port string) string {
