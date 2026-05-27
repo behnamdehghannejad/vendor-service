@@ -34,37 +34,43 @@ func NewVendorRepository(db *gorm.DB) *VendorRepository {
 	}
 }
 
-func (repo *VendorRepository) Add(domain domain.Vendor) error {
-	if err := repo.db.Create(repo.toVendorEntity(domain)).Error; err != nil {
-		return convertPostgresErrorToAppError(err, domain)
+func (repo *VendorRepository) Add(v domain.Vendor) error {
+	entity := repo.toVendorEntity(v)
+
+	if err := repo.db.Create(&entity).Error; err != nil {
+		return convertPostgresErrorToAppError(err, v)
 	}
+
 	return nil
 }
 
-func (repo *VendorRepository) Update(domain domain.Vendor) error {
-	if err := repo.db.Save(domain).Error; err != nil {
-		return convertPostgresErrorToAppError(err, domain)
+func (repo *VendorRepository) Update(v domain.Vendor) error {
+	entity := repo.toVendorEntity(v)
+
+	if err := repo.db.Save(&entity).Error; err != nil {
+		return convertPostgresErrorToAppError(err, v)
 	}
+
 	return nil
 }
 
 func (repo *VendorRepository) Delete(id int) error {
-	err := repo.db.Model(&VendorEntity{}).
+	if err := repo.db.Model(&VendorEntity{}).
 		Where("id = ?", id).
-		Updates(map[string]interface{}{
-			"updated_at": time.Now(),
+		Updates(map[string]any{
 			"active":     false,
-		}).Error
-	if err != nil {
+			"updated_at": time.Now(),
+		}).Error; err != nil {
 		return convertPostgresErrorToAppError(err)
 	}
+
 	return nil
 }
 
 func (repo *VendorRepository) Filter(filter domain.SearchVendor) ([]domain.Vendor, error) {
-	var vendorsEntity []VendorEntity
+	var entities []VendorEntity
 
-	query := repo.db.Model(&ProductEntity{})
+	query := repo.db.Model(&VendorEntity{})
 
 	if filter.IsActive != nil {
 		query = query.Where("active = ?", *filter.IsActive)
@@ -75,30 +81,24 @@ func (repo *VendorRepository) Filter(filter domain.SearchVendor) ([]domain.Vendo
 	}
 
 	if filter.SearchName != "" {
-		query = query.Where("name LIKE ?", "%"+filter.SearchName+"%")
+		query = query.Where("name ILIKE ?", "%"+filter.SearchName+"%")
 	}
 
-	err := query.Find(&vendorsEntity).Error
-	if err != nil {
+	if err := query.Find(&entities).Error; err != nil {
 		return nil, convertPostgresErrorToAppError(err)
 	}
-	return repo.toVendorsDomain(vendorsEntity), nil
+
+	return repo.toVendorsDomain(entities), nil
 }
 
 func (repo *VendorRepository) FindByID(id int) (domain.Vendor, error) {
-	var vendor VendorEntity
-	if err := repo.db.Where("id = ?", id).First(&vendor).Error; err != nil {
-		return domain.Vendor{}, convertPostgresErrorToAppError(err)
-	}
-	return repo.toVendorDomain(vendor), nil
-}
+	var entity VendorEntity
 
-func (repo *VendorRepository) FindByCode(code string) (domain.Vendor, error) {
-	var vendor VendorEntity
-	if err := repo.db.Where("code = ?", code).Find(&vendor).Error; err != nil {
+	if err := repo.db.First(&entity, id).Error; err != nil {
 		return domain.Vendor{}, convertPostgresErrorToAppError(err)
 	}
-	return repo.toVendorDomain(vendor), nil
+
+	return repo.toVendorDomain(entity), nil
 }
 
 func (repo *VendorRepository) toVendorEntity(vendor domain.Vendor) VendorEntity {

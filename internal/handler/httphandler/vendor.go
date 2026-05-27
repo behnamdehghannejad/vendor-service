@@ -119,7 +119,7 @@ func (h *Vendor) GetIsActiveFromQuery(activeStr string) *bool {
 	switch activeStr {
 	case "active":
 		return &active
-	case "deActive":
+	case "deactive":
 		return &deActive
 	}
 	return nil

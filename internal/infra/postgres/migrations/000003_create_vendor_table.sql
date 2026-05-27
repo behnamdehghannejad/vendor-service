@@ -1,5 +1,5 @@
 -- +migrate Up
-CREATE TABLE vendor (
+CREATE TABLE vendors (
     id BIGSERIAL PRIMARY KEY,
 
     code VARCHAR(50) NOT NULL,
@@ -15,4 +15,4 @@ CREATE TABLE vendor (
 );
 
 -- +migrate Down
-DROP TABLE IF EXISTS vendor;
+DROP TABLE IF EXISTS vendors;
