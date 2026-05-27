@@ -46,7 +46,6 @@ func (m *Migrator) UP() error {
 		m.password,
 		m.database,
 	)
-	fmt.Println(dsn)
 
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
