@@ -53,7 +53,7 @@ func (handler *HistoryGrpcHandler) Delete(ctx context.Context, request *pb.Delet
 
 func (handler *HistoryGrpcHandler) FindByOrderID(ctx context.Context, request *pb.GetHistoryByOrderIDRequest) (*pb.HistoryResponse, error) {
 
-	id, err := uuid.Parse(request.Id)
+	id, err := uuid.Parse(request.OrderId)
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +138,7 @@ func (handler *HistoryGrpcHandler) FindByStatus(ctx context.Context, request *pb
 
 func (handler *HistoryGrpcHandler) FindByIsActive(ctx context.Context, request *pb.GetHistoryByActiveRequest) (*pb.ListHistoryResponse, error) {
 
-	histories, err := handler.service.FindByIsActive(request.Active)
+	histories, err := handler.service.FindByIsActive(true)
 	if err != nil {
 		return nil, err
 	}

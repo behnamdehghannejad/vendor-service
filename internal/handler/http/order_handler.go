@@ -21,7 +21,7 @@ func NewOrderHandler(service service.OrderService) *OrderHandler {
 	}
 }
 
-func (handler *OrderHandler) ManageOrders(writer http.ResponseWriter, request *http.Request) {
+func (handler *OrderHandler) AddOrders(writer http.ResponseWriter, request *http.Request) {
 	defer request.Body.Close()
 
 	var req dto.ManageOrdersRequest

@@ -24,7 +24,7 @@ func NewOrderGrpcHandler(
 	}
 }
 
-func (handler *OrderGrpcHandler) ManageOrders(ctx context.Context, request *pb.ManageOrdersRequest) (*emptypb.Empty, error) {
+func (handler *OrderGrpcHandler) AddOrders(ctx context.Context, request *pb.ManageOrdersRequest) (*emptypb.Empty, error) {
 	requestDto := toManageOrdersDomain(request)
 
 	if err := handler.service.ManageOrders(requestDto); err != nil {

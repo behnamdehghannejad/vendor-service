@@ -11,27 +11,27 @@ service ProductService {
 
   rpc Add(CreateProductRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/vendor/product/create"
+      post: "/api/product/create"
       body: "*"
     };
   }
 
   rpc Update(UpdateProductRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      put: "/vendor/product/update"
+      put: "/api/product/update"
       body: "*"
     };
   }
 
   rpc Delete(DeleteProductRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      delete: "/vendor/product/delete"
+      delete: "/api/product/delete/{id}"
     };
   }
 
   rpc FindById(GetProductRequest) returns (ProductResponse) {
     option (google.api.http) = {
-      get: "/vendor/product/get/{id}"
+      get: "/api/product/{id}"
     };
   }
 }

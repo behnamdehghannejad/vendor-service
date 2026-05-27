@@ -9,16 +9,16 @@ import "google/protobuf/empty.proto";
 
 service OrderService {
 
-  rpc ManageOrders(ManageOrdersRequest) returns (google.protobuf.Empty) {
+  rpc AddOrders(ManageOrdersRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/order/manage"
+      post: "/api/order/create"
       body: "*"
     };
   }
 
   rpc AcceptOrdersPayment(AcceptOrdersPaymentRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/order/payment"
+      post: "/api/order/payment"
       body: "*"
     };
   }

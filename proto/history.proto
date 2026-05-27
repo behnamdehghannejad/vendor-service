@@ -11,7 +11,7 @@ service HistoryService {
 
   rpc Add(CreateHistoryRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/history/create"
+      post: "/api/history/create"
       body: "*"
     };
   }
@@ -25,43 +25,43 @@ service HistoryService {
 
   rpc Delete(DeleteHistoryRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      delete: "/history/delete"
+      delete: "/api/history/delete/{id}"
     };
   }
 
-  rpc FindByOrderID(GetHistoryByOrderIDRequest) returns (HistoryResponse) {
+  rpc GetByOrderID(GetHistoryByOrderIDRequest) returns (HistoryResponse) {
     option (google.api.http) = {
-      get: "/history/order/get/{id}"
+      get: "/api/history/order/{orderId}"
     };
   }
 
-  rpc FindByPaymentID(GetHistoryByPaymentIDRequest) returns (HistoryResponse) {
+  rpc GetByPaymentID(GetHistoryByPaymentIDRequest) returns (HistoryResponse) {
     option (google.api.http) = {
-      get: "/history/payment/get/{paymentId}"
+      get: "/api/history/payment/{paymentId}"
     };
   }
 
-  rpc FindByProductID(GetHistoryByProductIDRequest) returns (ListHistoryResponse) {
+  rpc GetByProductID(GetHistoryByProductIDRequest) returns (ListHistoryResponse) {
     option (google.api.http) = {
-      get: "/history/product/get/{productId}"
+      get: "/api/history/product/{productId}"
     };
   }
 
-  rpc FindByVendorID(GetHistoryByVendorIDRequest) returns (ListHistoryResponse) {
+  rpc GetByVendorID(GetHistoryByVendorIDRequest) returns (ListHistoryResponse) {
     option (google.api.http) = {
-      get: "/history/vendor/get/{vendorId}"
+      get: "/api/history/vendor/{vendorId}"
     };
   }
 
-  rpc FindByStatus(GetHistoryByStatusRequest) returns (ListHistoryResponse) {
+  rpc GetByStatus(GetHistoryByStatusRequest) returns (ListHistoryResponse) {
     option (google.api.http) = {
-      get: "/history/status/get/{status}"
+      get: "/api/history/status"
     };
   }
 
-  rpc FindByIsActive(GetHistoryByActiveRequest) returns (ListHistoryResponse) {
+  rpc GetByIsActive(GetHistoryByActiveRequest) returns (ListHistoryResponse) {
     option (google.api.http) = {
-      get: "/history/active/get/{active}"
+      get: "/api/history/actives"
     };
   }
 }
@@ -105,7 +105,7 @@ message DeleteHistoryRequest {
 }
 
 message GetHistoryByOrderIDRequest {
-  string id = 1;
+  string orderId = 1;
 }
 
 message GetHistoryByPaymentIDRequest {
@@ -125,7 +125,6 @@ message GetHistoryByStatusRequest {
 }
 
 message GetHistoryByActiveRequest {
-  bool active = 1;
 }
 
 message HistoryResponse {

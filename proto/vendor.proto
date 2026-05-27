@@ -11,33 +11,33 @@ service VendorService {
 
   rpc Add(CreateVendorRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/vendor/create"
+      post: "/api/vendor/create"
       body: "*"
     };
   }
 
   rpc Update(UpdateVendorRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      put: "/vendor/update"
+      put: "/api/vendor/update"
       body: "*"
     };
   }
 
   rpc Delete(DeleteVendorRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      delete: "/vendor/delete"
+      delete: "/api/vendor/delete"
     };
   }
 
   rpc FindByID(GetVendorRequest) returns (VendorResponse) {
     option (google.api.http) = {
-      get: "/vendor/get/{id}"
+      get: "/api/vendor/{id}"
     };
   }
 
   rpc FindByCode(GetCodeRequest) returns (VendorResponse) {
     option (google.api.http) = {
-      get: "/vendor/get/{code}"
+      get: "/api/vendor/code/{code}"
     };
   }
 }

@@ -10,7 +10,7 @@ import "google/protobuf/empty.proto";
 service InventoryService {
   rpc AddProductsToVendor(AddProductsToVendorRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/inventory/create"
+      post: "/api/inventory/add"
       body: "*"
     };
   }

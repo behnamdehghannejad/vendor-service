@@ -21,16 +21,16 @@ func runHttp(cfg *Config, vendorService service.VendorService, productService se
 }
 
 func handelOrderRequests(mux *http.ServeMux, handler *handler2.OrderHandler) {
-	mux.HandleFunc("POST /api/order/create", handler.ManageOrders)
-	mux.HandleFunc("POST /api/vendor/payment", handler.AcceptOrdersPayment)
+	mux.HandleFunc("POST /api/order/create", handler.AddOrders)
+	mux.HandleFunc("POST /api/order/payment", handler.AcceptOrdersPayment)
 }
 
 func handelVendorRequests(mux *http.ServeMux, handler *handler2.VendorHandler) {
 	mux.HandleFunc("POST /api/vendor/create", handler.Create)
-	mux.HandleFunc("POST /api/vendor/update", handler.Update)
+	mux.HandleFunc("PUT /api/vendor/update", handler.Update)
 	mux.HandleFunc("GET /api/vendor/{id}", handler.GetById)
 	mux.HandleFunc("GET /api/vendor/delete/{id}", handler.Delete)
-	mux.HandleFunc("GET /api/vendor/code/{id}", handler.GetByCode)
+	mux.HandleFunc("GET /api/vendor/code/{code}", handler.GetByCode)
 }
 
 func handelProductRequests(mux *http.ServeMux, handler *handler2.ProductHandler) {
@@ -42,16 +42,16 @@ func handelProductRequests(mux *http.ServeMux, handler *handler2.ProductHandler)
 
 func handelHistoryRequests(mux *http.ServeMux, handler *handler2.HistoryHandler) {
 	mux.HandleFunc("POST /api/history/create", handler.Create)
-	mux.HandleFunc("GET /api/history/order/{id}", handler.GetByOrderID)
-	mux.HandleFunc("GET /api/history/vendor/{id}", handler.GetByVendorID)
-	mux.HandleFunc("GET /api/history/payment/{id}", handler.GetByPaymentID)
-	mux.HandleFunc("GET /api/history/product/{id}", handler.GetByProductID)
+	mux.HandleFunc("GET /api/history/order/{orderId}", handler.GetByOrderID)
+	mux.HandleFunc("GET /api/history/vendor/{vendorId}", handler.GetByVendorID)
+	mux.HandleFunc("GET /api/history/payment/{paymentId}", handler.GetByPaymentID)
+	mux.HandleFunc("GET /api/history/product/{productId}", handler.GetByProductID)
 	mux.HandleFunc("GET /api/history/actives", handler.GetByIsActive)
-	mux.HandleFunc("POST /api/history/status", handler.GetByStatus)
+	mux.HandleFunc("GET /api/history/status/{status}", handler.GetByStatus)
 	mux.HandleFunc("DELETE /api/history/delete/{id}", handler.Delete)
 
 }
 
 func handelInventoryRequests(mux *http.ServeMux, handler *handler2.InventoryHandler) {
-	mux.HandleFunc("POST /api/inventory/api/orders", handler.AddProductsToVendor)
+	mux.HandleFunc("POST /api/inventory/add", handler.AddProductsToVendor)
 }
