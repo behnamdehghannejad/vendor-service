@@ -4,17 +4,16 @@ import (
 	"time"
 
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
-
 	"gorm.io/gorm"
 )
 
 type ProductEntity struct {
-	ID          int    `gorm:"primaryKey"`
-	Name        string `gorm:"size:255"`
-	Description string `gorm:"size:255"`
-	Active      bool   `gorm:"default:true"`
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID          int       `gorm:"primaryKey"`
+	Name        string    `gorm:"size:255"`
+	Description string    `gorm:"size:255"`
+	Active      bool      `gorm:"default:true"`
+	CreatedAt   time.Time `gorm:"column:created_at"`
+	UpdatedAt   time.Time `gorm:"column:updated_at"`
 }
 
 func (ProductEntity) TableName() string {
@@ -31,58 +30,77 @@ func NewProductRepository(db *gorm.DB) *ProductRepository {
 	}
 }
 
-func (repo *ProductRepository) Add(domain domain.Product) error {
-	return repo.db.Save(repo.toProductEntity(domain)).Error
+func (repo *ProductRepository) Add(product domain.Product) error {
+	entity := repo.toProductEntity(product)
+
+	if err := repo.db.Create(entity).Error; err != nil {
+		return convertPostgresErrorToAppError(err, product)
+	}
+
+	return nil
 }
 
-func (repo *ProductRepository) Update(domain domain.Product) error {
-	return repo.db.Save(repo.toProductEntity(domain)).Error
+func (repo *ProductRepository) Update(product domain.Product) error {
+	entity := repo.toProductEntity(product)
+
+	if err := repo.db.Save(entity).Error; err != nil {
+		return convertPostgresErrorToAppError(err, product)
+	}
+
+	return nil
 }
 
 func (repo *ProductRepository) Delete(id int) error {
-	err := repo.db.Model(&ProductEntity{}).
+	if err := repo.db.Model(&ProductEntity{}).
 		Where("id = ?", id).
-		Updates(map[string]interface{}{
-			"updated_at": time.Now(),
+		Updates(map[string]any{
 			"active":     false,
-		}).Error
-	if err != nil {
+			"updated_at": time.Now(),
+		}).Error; err != nil {
 		return convertPostgresErrorToAppError(err, id)
 	}
+
 	return nil
 }
 
 func (repo *ProductRepository) Filter(filter domain.SearchProduct) ([]domain.Product, error) {
-	var productsEntity []ProductEntity
+	var entities []ProductEntity
 
 	query := repo.db.Model(&ProductEntity{})
 
 	if filter.SearchName != "" {
-		query = query.Where("name LIKE ?", "%"+filter.SearchName+"%")
+		query = query.Where(
+			"name ILIKE ?",
+			"%"+filter.SearchName+"%",
+		)
 	}
 
-	err := query.Find(&productsEntity).Error
-	if err != nil {
+	if err := query.Find(&entities).Error; err != nil {
 		return nil, convertPostgresErrorToAppError(err)
 	}
-	return repo.toProductsDomain(productsEntity), nil
+
+	return repo.toProductsDomain(entities), nil
 }
 
 func (repo *ProductRepository) FindById(id int) (domain.Product, error) {
-	var product ProductEntity
-	if err := repo.db.Where("id = ?", id).First(&product).Error; err != nil {
+	var entity ProductEntity
+
+	if err := repo.db.First(&entity, id).Error; err != nil {
 		return domain.Product{}, convertPostgresErrorToAppError(err)
 	}
 
-	return repo.toProductDomain(product), nil
+	return repo.toProductDomain(entity), nil
 }
 
-func (repo *ProductRepository) toProductsDomain(productsEntity []ProductEntity) []domain.Product {
-	products := make([]domain.Product, 0, len(productsEntity))
-	for _, product := range productsEntity {
-		products = append(products, repo.toProductDomain(product))
+func (repo *ProductRepository) toProductEntity(product domain.Product) *ProductEntity {
+	return &ProductEntity{
+		ID:          product.ID,
+		Name:        product.Name,
+		Description: product.Description,
+		Active:      product.Active,
+		CreatedAt:   product.CreatedAt,
+		UpdatedAt:   product.UpdatedAt,
 	}
-	return products
 }
 
 func (repo *ProductRepository) toProductDomain(product ProductEntity) domain.Product {
@@ -96,13 +114,17 @@ func (repo *ProductRepository) toProductDomain(product ProductEntity) domain.Pro
 	}
 }
 
-func (repo *ProductRepository) toProductEntity(product domain.Product) *ProductEntity {
-	return &ProductEntity{
-		ID:          product.ID,
-		Name:        product.Name,
-		Description: product.Description,
-		Active:      product.Active,
-		CreatedAt:   product.CreatedAt,
-		UpdatedAt:   product.UpdatedAt,
+func (repo *ProductRepository) toProductsDomain(
+	entities []ProductEntity,
+) []domain.Product {
+	products := make([]domain.Product, 0, len(entities))
+
+	for _, entity := range entities {
+		products = append(
+			products,
+			repo.toProductDomain(entity),
+		)
 	}
+
+	return products
 }
