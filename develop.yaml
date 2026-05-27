@@ -1,7 +1,6 @@
 app:
-  name: task-manager
+  host: localhost
   httpport: 8085
-  gatewayport: 8080
 
 grpc:
   host: "0.0.0.0"
@@ -14,6 +13,7 @@ database:
   password: password
   name: vendor_service
   sslmode: disable
+  migrate: true
 
 redis:
   host: localhost

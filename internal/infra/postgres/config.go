@@ -6,6 +6,6 @@ type PostgresConfig struct {
 	Database string
 	Host     string
 	Port     string
+	SSLMode  string
 	Migrate  bool
-	SSLMode  bool
 }
