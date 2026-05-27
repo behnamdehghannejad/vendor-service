@@ -4,12 +4,12 @@ import (
 	"errors"
 
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/apperror"
-	"github.com/jackc/pgconn"
+	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
 func convertPostgresErrorToAppError(err error, inputs ...any) error {
-	var pgErr *pgconn.PgError
+	var pqErr *pq.Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return apperror.Wrap(err).
@@ -20,8 +20,8 @@ func convertPostgresErrorToAppError(err error, inputs ...any) error {
 			Build()
 	}
 
-	if errors.As(err, &pgErr) {
-		return generatePostgresError(pgErr, inputs...)
+	if errors.As(err, &pqErr) {
+		return generatePostgresError(pqErr, inputs...)
 	}
 
 	return apperror.Wrap(err).
@@ -32,27 +32,30 @@ func convertPostgresErrorToAppError(err error, inputs ...any) error {
 		Build()
 }
 
-func generatePostgresError(pgErr *pgconn.PgError, inputs ...any) error {
-	switch pgErr.Code {
+func generatePostgresError(pqErr *pq.Error, inputs ...any) error {
+	switch pqErr.Code {
 
+	// unique_violation
 	case "23505":
-		return apperror.Wrap(pgErr).
+		return apperror.Wrap(pqErr).
 			Input(inputs...).
 			Duplicate().
 			Warning().
 			Log().
 			Build()
 
+	// foreign_key_violation
 	case "23503":
-		return apperror.Wrap(pgErr).
+		return apperror.Wrap(pqErr).
 			Input(inputs...).
 			BadRequest().
 			Warning().
 			Log().
 			Build()
 
+	// not_null_violation
 	case "23502":
-		return apperror.Wrap(pgErr).
+		return apperror.Wrap(pqErr).
 			Input(inputs...).
 			BadRequest().
 			Warning().
@@ -60,7 +63,7 @@ func generatePostgresError(pgErr *pgconn.PgError, inputs ...any) error {
 			Build()
 
 	default:
-		return apperror.Wrap(pgErr).
+		return apperror.Wrap(pqErr).
 			Input(inputs...).
 			UnExpected().
 			Warning().
