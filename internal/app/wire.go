@@ -1,89 +1,166 @@
 package app
 
 import (
+	"context"
 	"fmt"
-	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"time"
-	handler "vendor-service/internal/handler/grpc"
-	handler2 "vendor-service/internal/handler/http"
-	"vendor-service/internal/infra/repository"
-	"vendor-service/internal/service"
+
+	"github.com/behnamdehghannejad/vendorservice/internal/handler/httphandler"
+	"github.com/behnamdehghannejad/vendorservice/internal/infra/postgres"
+	"github.com/behnamdehghannejad/vendorservice/internal/pkg/apperror"
+	"github.com/behnamdehghannejad/vendorservice/internal/pkg/config"
+	"github.com/behnamdehghannejad/vendorservice/internal/pkg/log"
+	"github.com/behnamdehghannejad/vendorservice/internal/pkg/metrics"
+	"github.com/behnamdehghannejad/vendorservice/internal/port"
+	"github.com/behnamdehghannejad/vendorservice/internal/service"
+	"github.com/behnamdehghannejad/vendorservice/internal/validator"
+	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func Start() error {
-	cfg := LoadConfig()
-	postgres, err := NewPostgres(cfg)
+func Run() {
+	err := log.Initialize()
 	if err != nil {
-		return err
+		return
 	}
 
-	err = postgres.AutoMigrate(&repository.ProductEntity{})
-	err = postgres.AutoMigrate(&repository.VendorEntity{})
-	//err = postgres.AutoMigrate(&repository.InventoryEntity{})
-	err = postgres.AutoMigrate(&repository.HistoryEntity{})
+	cfg, err := config.Load()
+	if err != nil {
+		return
+	}
 
-	vendorRepository := repository.NewVendorRepositoryImpl(postgres)
-	productRepository := repository.NewProductRepositoryImpl(postgres)
-	historyRepository := repository.NewHistoryRepositoryImpl(postgres)
+	metrics.Init()
+	if err := migrate(cfg.Database); err != nil {
+		return
+	}
+
+	_, vendorService, productService, err := registerServices(cfg.Database)
+	if err != nil {
+		return
+	}
+
+	server := createServer(cfg.App, vendorService, productService)
+
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt)
+
+	go startServer(server, cfg.App)
+
+	<-stop
+
+	shutdownServer(server)
+}
+
+func migrate(cfg postgres.PostgresConfig) error {
+	migrator := postgres.NewMigrator(cfg)
+	if err := migrator.UP(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func registerServices(cfg postgres.PostgresConfig) (port.HistoryService, port.VendorService, port.ProductService, error) {
+	db, err := postgres.New(cfg)
+	if err != nil {
+		return nil, nil, nil, apperror.Wrap(err).UnExpected().DebuggingError().Build()
+	}
+
+	historyRepository := postgres.NewHistoryRepository(db)
+	vendorRepository := postgres.NewVendorRepository(db)
+	productRepository := postgres.NewProductRepository(db)
+
+	historyService := service.NewHistoryService(historyRepository)
 	vendorService := service.NewVendorService(vendorRepository)
 	productService := service.NewProductService(productRepository)
-	historyService := service.NewHistoryService(historyRepository)
 
-	go runHttp(cfg, vendorService, productService, historyService)
-	time.Sleep(100 * time.Millisecond)
-
-	runServer(cfg, vendorService, productService, historyService)
-
-	return err
+	return historyService, vendorService, productService, nil
 }
 
-func runHttp(cfg *Config, vendorService service.VendorService, productService service.ProductService, historyService service.HistoryService) {
-	mux := http.NewServeMux()
-	handelVendorRequests(mux, handler2.NewVendorHandler(vendorService))
-	handelProductRequests(mux, handler2.NewProductHandler(productService))
-	handelHistoryRequests(mux, handler2.NewHistoryHandler(historyService))
-	port := cfg.App.HttpPort
-	http.ListenAndServe(fmt.Sprintf(":%d", port), mux)
-	log.Println("HTTP server running on", port)
+func startServer(server *http.Server, cfg httphandler.HttpConfig) {
+	log.Infof("server started on %s", getAddress(cfg.Host, cfg.Port))
+
+	err := server.ListenAndServe()
+	if err != nil && err != http.ErrServerClosed {
+		log.Warningf("server error: %s", err.Error())
+	}
 }
 
-func handelVendorRequests(mux *http.ServeMux, orderHandler *handler2.VendorHandler) {
-	mux.HandleFunc("POST /vendor/api/orders", orderHandler.Create)
-	mux.HandleFunc("GET /vendor/api/orders/{id}", orderHandler.GetById)
-	mux.HandleFunc("GET /vendor/api/orders/delete/{id}", orderHandler.Delete)
-	//mux.HandleFunc("GET /vendor/api/orders/delete/{id}", orderHandler.GetById)
-	//mux.HandleFunc("GET /vendor/api/orders/delete/{id}", orderHandler.GetByCode)
+func shutdownServer(server *http.Server) {
+	log.Warning("shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Warningf("shutdown failed: %s", err.Error())
+		return
+	}
+
+	log.Warning("server stopped cleanly")
 }
 
-func handelProductRequests(mux *http.ServeMux, orderHandler *handler2.ProductHandler) {
-	//mux.HandleFunc("POST /vendor/api/orders", orderHandler.Create)
-	//mux.HandleFunc("GET /vendor/api/orders/{id}", orderHandler.GetById)
-	//mux.HandleFunc("GET /vendor/api/orders/delete/{id}", orderHandler.Delete)
-	//mux.HandleFunc("GET /vendor/api/orders/delete/{id}", orderHandler.Update)
+func createServer(
+	cfg httphandler.HttpConfig,
+	vendorService port.VendorService,
+	productService port.ProductService,
+) *http.Server {
+	gin.SetMode(gin.ReleaseMode)
+
+	router := gin.New()
+
+	router.Use(gin.Recovery())
+	router.Use(metrics.PrometheusMiddleware())
+
+	vendorHandler := httphandler.NewVendorHandler(
+		vendorService,
+		validator.NewVendor(vendorService),
+	)
+
+	productHandler := httphandler.NewProductHandler(
+		productService,
+		validator.NewProduct(),
+	)
+
+	registerRoutes(router, vendorHandler, productHandler)
+
+	registerMetrics(router)
+
+	return &http.Server{
+		Addr:              getAddress(cfg.Host, cfg.Port),
+		Handler:           router,
+		ReadTimeout:       5 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       120 * time.Second,
+		ReadHeaderTimeout: 2 * time.Second,
+	}
 }
 
-func handelHistoryRequests(mux *http.ServeMux, orderHandler *handler2.HistoryHandler) {
-	//mux.HandleFunc("POST /vendor/api/orders", orderHandler.Create)
-	//mux.HandleFunc("POST /vendor/api/orders", orderHandler.GetByOrderID)
-	//mux.HandleFunc("POST /vendor/api/orders", orderHandler.GetByVendorID)
-	//mux.HandleFunc("POST /vendor/api/orders", orderHandler.GetByPaymentID)
-	//mux.HandleFunc("POST /vendor/api/orders", orderHandler.GetByProductID)
-	//mux.HandleFunc("POST /vendor/api/orders", orderHandler.GetByIsActive)
-	//mux.HandleFunc("POST /vendor/api/orders", orderHandler.GetByStatus)
-	//mux.HandleFunc("GET /vendor/api/orders/delete/{id}", orderHandler.Delete)
+func registerRoutes(
+	router *gin.Engine,
+	vendorHandler *httphandler.Vendor,
+	productHandler *httphandler.Product,
+) {
+	router.POST("/api/v1/vendors", vendorHandler.Create)
+	router.GET("/api/v1/vendors/:id", vendorHandler.GetById)
+	router.DELETE("/api/v1/vendors/:id", vendorHandler.Delete)
+	router.GET("/api/v1/vendors", vendorHandler.Filter)
 
+	router.POST("/api/v1/products", productHandler.Create)
+	router.GET("/api/v1/products/:id", productHandler.GetById)
+	router.GET("api/v1/products", productHandler.Filter)
 }
 
-func runServer(cfg *Config, vendorService service.VendorService, productService service.ProductService, historyService service.HistoryService) {
-	vendorGrpcHandler := handler.NewVendorGrpcHandler(vendorService)
-	productGrpcHandler := handler.NewProductGrpcHandler(productService)
-	historyGrpcHandler := handler.NewHistoryGrpcHandler(historyService)
-	grpcAddress := fmt.Sprintf("%s:%d", cfg.GRPC.Host, cfg.GRPC.Port)
+func registerMetrics(router *gin.Engine) {
+	router.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{"pong": true})
+	})
 
-	// Start HTTP Gateway in goroutine
-	go RunHTTPGateway(grpcAddress, cfg.App.GatewayPort)
-	time.Sleep(100 * time.Millisecond)
-	// Start gRPC server in main thread (blocking)
-	RunGrpcServer(grpcAddress, *vendorGrpcHandler, *productGrpcHandler, *historyGrpcHandler)
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+}
+
+func getAddress(host string, port string) string {
+	return fmt.Sprintf("%s:%s", host, port)
 }

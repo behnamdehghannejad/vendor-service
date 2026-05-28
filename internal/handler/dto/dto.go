@@ -23,6 +23,10 @@ type ProductResponse struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
+type ProductsResponse struct {
+	Items []ProductResponse `json:"items"`
+}
+
 type CreateVendorRequest struct {
 	Code    string `json:"code"`
 	Name    string `json:"name"`
@@ -51,6 +55,10 @@ type VendorResponse struct {
 	Active    bool      `json:"active"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type VendorsResponse struct {
+	Items []VendorResponse `json:"items"`
 }
 
 type CreateHistoryRequest struct {

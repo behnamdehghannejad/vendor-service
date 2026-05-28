@@ -1,27 +1,12 @@
 app:
-  name: task-manager
-  httpport: 8085
-  gatewayport: 8080
-
-grpc:
-  host: "0.0.0.0"
-  port: 50100
+  host: localhost
+  port: 8080
 
 database:
   host: localhost
-  port: 5000
-  user: admin
-  password: password
-  name: vendor_service
+  port: 5432
+  username: postgres
+  password: postgres
+  database: vendor
   sslmode: disable
-
-redis:
-  host: localhost
-  port: 6379
-  password: ""
-  db: 0
-
-logger:
-  level: info
-
-#  APP_ENV=develop go run main.go
+  migrate: true

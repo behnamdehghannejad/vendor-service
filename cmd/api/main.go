@@ -1,10 +1,7 @@
 package main
 
-import "vendor-service/internal/app"
+import "github.com/behnamdehghannejad/vendorservice/internal/app"
 
 func main() {
-	err := app.Start()
-	if err != nil {
-		return
-	}
+	app.Run()
 }

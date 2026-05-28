@@ -1,0 +1,18 @@
+-- +migrate Up
+CREATE TABLE vendors (
+    id BIGSERIAL PRIMARY KEY,
+
+    code VARCHAR(50) NOT NULL,
+    name VARCHAR(200) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    address VARCHAR(500) NOT NULL,
+
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- +migrate Down
+DROP TABLE IF EXISTS vendors;

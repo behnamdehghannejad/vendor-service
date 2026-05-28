@@ -1,11 +1,34 @@
 package service
 
-import "vendor-service/internal/domain"
+import (
+	"github.com/behnamdehghannejad/vendorservice/internal/domain"
+	"github.com/behnamdehghannejad/vendorservice/internal/port"
+)
 
-type VendorService interface {
-	Create(vendor *domain.Vendor) error
-	Update(vendor *domain.Vendor) error
-	Delete(id int) error
-	FindByID(id int) (*domain.Vendor, error)
-	FindByCode(code string) (*domain.Vendor, error)
+type VendorService struct {
+	repository port.VendorRepository
+}
+
+func NewVendorService(repository port.VendorRepository) *VendorService {
+	return &VendorService{repository: repository}
+}
+
+func (s *VendorService) Create(vendor domain.Vendor) error {
+	return s.repository.Add(vendor)
+}
+
+func (s *VendorService) Update(vendor domain.Vendor) error {
+	return s.repository.Update(vendor)
+}
+
+func (s *VendorService) Delete(id int) error {
+	return s.repository.Delete(id)
+}
+
+func (s *VendorService) FindByID(id int) (domain.Vendor, error) {
+	return s.repository.FindByID(id)
+}
+
+func (s *VendorService) Filter(filter domain.SearchVendor) ([]domain.Vendor, error) {
+	return s.repository.Filter(filter)
 }
