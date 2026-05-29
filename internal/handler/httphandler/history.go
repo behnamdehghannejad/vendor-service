@@ -25,31 +25,6 @@ func NewHistoryHandler(service port.HistoryService, validator *validator.History
 	}
 }
 
-func (h *History) Create(c *gin.Context) {
-	var req dto.CreateHistoryRequest
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		responseError, status := httperror.Handle(err)
-		c.JSON(status, responseError)
-		return
-	}
-
-	if err := h.validator.Create(req); err != nil {
-		responseError, status := httperror.Handle(err)
-		c.JSON(status, responseError)
-		return
-	}
-
-	err := h.service.Create(h.toHistoryDomain(req))
-	if err != nil {
-		responseError, status := httperror.Handle(err)
-		c.JSON(status, responseError)
-		return
-	}
-
-	c.Status(http.StatusCreated)
-}
-
 func (h *History) GetByOrderID(c *gin.Context) {
 	idStr := c.Param("id")
 
@@ -161,25 +136,6 @@ func (h *History) GetByIsActive(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, h.serializeHistories(histories))
-}
-
-func (h *History) Delete(c *gin.Context) {
-	idStr := c.Param("id")
-
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		errorResponse, status := httperror.Handle(err)
-		c.JSON(status, errorResponse)
-		return
-	}
-
-	if err := h.service.Delete(id); err != nil {
-		errorResponse, status := httperror.Handle(err)
-		c.JSON(status, errorResponse)
-		return
-	}
-
-	c.Status(http.StatusNoContent)
 }
 
 func (h *History) toHistoryDomain(req dto.CreateHistoryRequest) domain.History {

@@ -4,21 +4,9 @@ import (
 	"time"
 
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
+	"github.com/behnamdehghannejad/vendorservice/internal/infra/postgres/model"
 	"gorm.io/gorm"
 )
-
-type ProductEntity struct {
-	ID          int       `gorm:"primaryKey"`
-	Name        string    `gorm:"size:255"`
-	Description string    `gorm:"size:255"`
-	Active      bool      `gorm:"default:true"`
-	CreatedAt   time.Time `gorm:"column:created_at"`
-	UpdatedAt   time.Time `gorm:"column:updated_at"`
-}
-
-func (ProductEntity) TableName() string {
-	return "products"
-}
 
 type ProductRepository struct {
 	db *gorm.DB
@@ -51,7 +39,7 @@ func (repo *ProductRepository) Update(product domain.Product) error {
 }
 
 func (repo *ProductRepository) Delete(id int) error {
-	if err := repo.db.Model(&ProductEntity{}).
+	if err := repo.db.Model(&model.ProductEntity{}).
 		Where("id = ?", id).
 		Updates(map[string]any{
 			"active":     false,
@@ -64,9 +52,9 @@ func (repo *ProductRepository) Delete(id int) error {
 }
 
 func (repo *ProductRepository) Filter(filter domain.SearchProduct) ([]domain.Product, error) {
-	var entities []ProductEntity
+	var entities []model.ProductEntity
 
-	query := repo.db.Model(&ProductEntity{})
+	query := repo.db.Model(&model.ProductEntity{})
 
 	if filter.SearchName != "" {
 		query = query.Where(
@@ -83,7 +71,7 @@ func (repo *ProductRepository) Filter(filter domain.SearchProduct) ([]domain.Pro
 }
 
 func (repo *ProductRepository) FindById(id int) (domain.Product, error) {
-	var entity ProductEntity
+	var entity model.ProductEntity
 
 	if err := repo.db.First(&entity, id).Error; err != nil {
 		return domain.Product{}, convertPostgresErrorToAppError(err)
@@ -92,8 +80,8 @@ func (repo *ProductRepository) FindById(id int) (domain.Product, error) {
 	return repo.toProductDomain(entity), nil
 }
 
-func (repo *ProductRepository) toProductEntity(product domain.Product) *ProductEntity {
-	return &ProductEntity{
+func (repo *ProductRepository) toProductEntity(product domain.Product) *model.ProductEntity {
+	return &model.ProductEntity{
 		ID:          product.ID,
 		Name:        product.Name,
 		Description: product.Description,
@@ -103,7 +91,7 @@ func (repo *ProductRepository) toProductEntity(product domain.Product) *ProductE
 	}
 }
 
-func (repo *ProductRepository) toProductDomain(product ProductEntity) domain.Product {
+func (repo *ProductRepository) toProductDomain(product model.ProductEntity) domain.Product {
 	return domain.Product{
 		ID:          product.ID,
 		Name:        product.Name,
@@ -115,7 +103,7 @@ func (repo *ProductRepository) toProductDomain(product ProductEntity) domain.Pro
 }
 
 func (repo *ProductRepository) toProductsDomain(
-	entities []ProductEntity,
+	entities []model.ProductEntity,
 ) []domain.Product {
 	products := make([]domain.Product, 0, len(entities))
 

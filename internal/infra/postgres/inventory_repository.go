@@ -2,21 +2,10 @@ package postgres
 
 import (
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
+	"github.com/behnamdehghannejad/vendorservice/internal/infra/postgres/model"
 
 	"gorm.io/gorm"
 )
-
-type InventoryEntity struct {
-	ID        int `gorm:"primary_key"`
-	VendorID  int `gorm:"column:vendor_id"`
-	ProductID int `gorm:"column:product_id"`
-	Quantity  int `gorm:"column:quantity"`
-	Reserved  int `gorm:"column:reserved"`
-}
-
-func (InventoryEntity) TableName() string {
-	return "inventory"
-}
 
 type InventoryRepository struct {
 	db *gorm.DB
@@ -33,7 +22,7 @@ func (repo *InventoryRepository) Add(inventory domain.Inventory) error {
 }
 
 func (repo *InventoryRepository) FindByVendorIDAndProductID(vendorID int, productID int) (domain.Inventory, error) {
-	var inventoryEntity InventoryEntity
+	var inventoryEntity model.InventoryEntity
 	if err := repo.db.Where("vendor_id = ? AND product_id = ?", vendorID, productID).First(&inventoryEntity).Error; err != nil {
 		return domain.Inventory{}, err
 	}
@@ -45,8 +34,8 @@ func (repo *InventoryRepository) Update(inventory domain.Inventory) error {
 	return repo.db.Save(toInventoryEntity(inventory)).Error
 }
 
-func toInventoryEntity(inventory domain.Inventory) InventoryEntity {
-	return InventoryEntity{
+func toInventoryEntity(inventory domain.Inventory) model.InventoryEntity {
+	return model.InventoryEntity{
 		ID:        inventory.ID,
 		ProductID: inventory.ProductID,
 		VendorID:  inventory.VendorID,
@@ -55,7 +44,7 @@ func toInventoryEntity(inventory domain.Inventory) InventoryEntity {
 	}
 }
 
-func toInventoryDomain(entity InventoryEntity) domain.Inventory {
+func toInventoryDomain(entity model.InventoryEntity) domain.Inventory {
 	return domain.Inventory{
 		ID:        entity.ID,
 		VendorID:  entity.VendorID,
