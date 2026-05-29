@@ -32,3 +32,12 @@ func (s *ProductService) FindById(id int) (domain.Product, error) {
 func (s *ProductService) Filter(filter domain.SearchProduct) ([]domain.Product, error) {
 	return s.repository.Filter(filter)
 }
+
+func (service *ProductService) IsActive(id int) error {
+	product, err := service.FindById(id)
+	if err != nil {
+		return err
+	}
+
+	return domain.IsActiveProduct(product.Active)
+}

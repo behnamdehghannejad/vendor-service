@@ -8,4 +8,5 @@ type VendorService interface {
 	Delete(int) error
 	FindByID(int) (domain.Vendor, error)
 	Filter(domain.SearchVendor) ([]domain.Vendor, error)
+	IsActive(id int) error
 }

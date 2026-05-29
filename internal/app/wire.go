@@ -37,12 +37,12 @@ func Run() {
 		return
 	}
 
-	_, vendorService, productService, err := registerServices(cfg.Database)
+	historyService, vendorService, productService, inventoryService, orderService, err := registerServices(cfg.Database)
 	if err != nil {
 		return
 	}
 
-	server := createServer(cfg.App, vendorService, productService)
+	server := createServer(cfg.App, historyService, vendorService, productService, inventoryService, orderService)
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
@@ -62,21 +62,31 @@ func migrate(cfg postgres.PostgresConfig) error {
 	return nil
 }
 
-func registerServices(cfg postgres.PostgresConfig) (port.HistoryService, port.VendorService, port.ProductService, error) {
+func registerServices(cfg postgres.PostgresConfig) (
+	port.HistoryService,
+	port.VendorService,
+	port.ProductService,
+	port.InventoryService,
+	port.OrderService,
+	error,
+) {
 	db, err := postgres.New(cfg)
 	if err != nil {
-		return nil, nil, nil, apperror.Wrap(err).UnExpected().DebuggingError().Build()
+		return nil, nil, nil, nil, nil, apperror.Wrap(err).UnExpected().DebuggingError().Build()
 	}
 
 	historyRepository := postgres.NewHistoryRepository(db)
 	vendorRepository := postgres.NewVendorRepository(db)
 	productRepository := postgres.NewProductRepository(db)
+	inventoryRepository := postgres.NewInventoryRepository(db)
 
 	historyService := service.NewHistoryService(historyRepository)
 	vendorService := service.NewVendorService(vendorRepository)
 	productService := service.NewProductService(productRepository)
+	inventoryService := service.NewInventoryService(inventoryRepository)
+	orderService := service.NewOrderService(*inventoryService, *productService, *vendorService, *historyService)
 
-	return historyService, vendorService, productService, nil
+	return historyService, vendorService, productService, inventoryService, orderService, nil
 }
 
 func startServer(server *http.Server, cfg httphandler.HttpConfig) {
@@ -102,17 +112,18 @@ func shutdownServer(server *http.Server) {
 	log.Warning("server stopped cleanly")
 }
 
-func createServer(
-	cfg httphandler.HttpConfig,
-	vendorService port.VendorService,
-	productService port.ProductService,
-) *http.Server {
+func createServer(cfg httphandler.HttpConfig, historyService port.HistoryService, vendorService port.VendorService, productService port.ProductService, inventoryService port.InventoryService, orderService port.OrderService) *http.Server {
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.New()
 
 	router.Use(gin.Recovery())
 	router.Use(metrics.PrometheusMiddleware())
+
+	historyHandler := httphandler.NewHistoryHandler(
+		historyService,
+		validator.NewHistory(historyService),
+	)
 
 	vendorHandler := httphandler.NewVendorHandler(
 		vendorService,
@@ -121,10 +132,20 @@ func createServer(
 
 	productHandler := httphandler.NewProductHandler(
 		productService,
-		validator.NewProduct(),
+		validator.NewProduct(productService),
 	)
 
-	registerRoutes(router, vendorHandler, productHandler)
+	inventoryHandler := httphandler.NewInventoryHandler(
+		inventoryService,
+		validator.NewInventory(inventoryService),
+	)
+
+	orderHandler := httphandler.NewOrderHandler(
+		orderService,
+		validator.NewOrder(orderService),
+	)
+
+	registerRoutes(router, historyHandler, vendorHandler, productHandler, inventoryHandler, orderHandler)
 
 	registerMetrics(router)
 
@@ -140,8 +161,11 @@ func createServer(
 
 func registerRoutes(
 	router *gin.Engine,
+	historyHandler *httphandler.History,
 	vendorHandler *httphandler.Vendor,
 	productHandler *httphandler.Product,
+	inventoryHandler *httphandler.Inventory,
+	handler *httphandler.Order,
 ) {
 	router.POST("/api/v1/vendors", vendorHandler.Create)
 	router.GET("/api/v1/vendors/:id", vendorHandler.GetById)

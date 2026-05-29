@@ -32,3 +32,12 @@ func (s *VendorService) FindByID(id int) (domain.Vendor, error) {
 func (s *VendorService) Filter(filter domain.SearchVendor) ([]domain.Vendor, error) {
 	return s.repository.Filter(filter)
 }
+
+func (s *VendorService) IsActive(id int) error {
+	vendor, err := s.FindByID(id)
+	if err != nil {
+		return err
+	}
+
+	return domain.IsActiveVendor(vendor.Active)
+}

@@ -8,17 +8,17 @@ import (
 	"github.com/go-ozzo/ozzo-validation/is"
 )
 
-type Product struct {
-	product port.ProductService
+type Order struct {
+	service port.OrderService
 }
 
-func NewProduct(product port.ProductService) *Product {
-	return &Product{
-		product: product,
+func NewOrder(service port.OrderService) *Order {
+	return &Order{
+		service: service,
 	}
 }
 
-func (p *Product) ValidateID(idStr string) error {
+func (o *Order) ValidateID(idStr string) error {
 	err := validation.Validate(
 		idStr,
 		validation.Required,
@@ -34,7 +34,7 @@ func (p *Product) ValidateID(idStr string) error {
 	return nil
 }
 
-func (p *Product) Create(r dto.CreateProductRequest) error {
+func (h *Order) Create(r dto.ManageOrdersRequest) error {
 	err := validation.ValidateStruct(&r)
 	if err != nil {
 		return apperror.
