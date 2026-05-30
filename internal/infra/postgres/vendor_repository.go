@@ -40,7 +40,7 @@ func (repo *VendorRepository) Update(v domain.Vendor) error {
 }
 
 func (repo *VendorRepository) Delete(id int) error {
-	if err := repo.db.Model(&model.VendorEntity{}).
+	if err := repo.db.Model(&model.VendorModel{}).
 		Where("id = ?", id).
 		Updates(map[string]any{
 			"active":     false,
@@ -53,9 +53,9 @@ func (repo *VendorRepository) Delete(id int) error {
 }
 
 func (repo *VendorRepository) Filter(filter domain.SearchVendor) ([]domain.Vendor, error) {
-	var entities []model.VendorEntity
+	var entities []model.VendorModel
 
-	query := repo.db.Model(&model.VendorEntity{})
+	query := repo.db.Model(&model.VendorModel{})
 
 	if filter.IsActive != nil {
 		query = query.Where("active = ?", *filter.IsActive)
@@ -77,7 +77,7 @@ func (repo *VendorRepository) Filter(filter domain.SearchVendor) ([]domain.Vendo
 }
 
 func (repo *VendorRepository) FindByID(id int) (domain.Vendor, error) {
-	var entity model.VendorEntity
+	var entity model.VendorModel
 
 	if err := repo.db.First(&entity, id).Error; err != nil {
 		return domain.Vendor{}, convertPostgresErrorToAppError(err)
@@ -86,8 +86,8 @@ func (repo *VendorRepository) FindByID(id int) (domain.Vendor, error) {
 	return repo.toVendorDomain(entity), nil
 }
 
-func (repo *VendorRepository) toVendorEntity(vendor domain.Vendor) model.VendorEntity {
-	return model.VendorEntity{
+func (repo *VendorRepository) toVendorEntity(vendor domain.Vendor) model.VendorModel {
+	return model.VendorModel{
 		ID:        vendor.ID,
 		Name:      vendor.Name,
 		Code:      vendor.Code,
@@ -100,7 +100,7 @@ func (repo *VendorRepository) toVendorEntity(vendor domain.Vendor) model.VendorE
 	}
 }
 
-func (repo *VendorRepository) toVendorDomain(vendor model.VendorEntity) domain.Vendor {
+func (repo *VendorRepository) toVendorDomain(vendor model.VendorModel) domain.Vendor {
 	return domain.Vendor{
 		ID:        vendor.ID,
 		Name:      vendor.Name,
@@ -114,7 +114,7 @@ func (repo *VendorRepository) toVendorDomain(vendor model.VendorEntity) domain.V
 	}
 }
 
-func (repo *VendorRepository) toVendorsDomain(vendors []model.VendorEntity) []domain.Vendor {
+func (repo *VendorRepository) toVendorsDomain(vendors []model.VendorModel) []domain.Vendor {
 	vendorsDomain := make([]domain.Vendor, 0, len(vendors))
 	for _, vendor := range vendors {
 		vendorsDomain = append(vendorsDomain, repo.toVendorDomain(vendor))

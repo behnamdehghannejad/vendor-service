@@ -6,7 +6,6 @@ import (
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
 	"github.com/behnamdehghannejad/vendorservice/internal/infra/postgres/model"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -34,21 +33,8 @@ func (repo *HistoryRepository) Update(history domain.History) error {
 	return nil
 }
 
-func (repo *HistoryRepository) Delete(id int) error {
-	err := repo.db.Model(&model.HistoryEntity{}).
-		Where("id = ?", id).
-		Updates(map[string]interface{}{
-			"updated_at": time.Now(),
-			"active":     false,
-		}).Error
-	if err != nil {
-		return convertPostgresErrorToAppError(err)
-	}
-	return nil
-}
-
-func (repo *HistoryRepository) FindByOrderID(id uuid.UUID) (domain.History, error) {
-	var history model.HistoryEntity
+func (repo *HistoryRepository) FindByOrderID(id string) (domain.History, error) {
+	var history model.HistoryModel
 	if err := repo.db.Where("order_id = ?", id).First(&history).Error; err != nil {
 		return domain.History{}, convertPostgresErrorToAppError(err)
 	}
@@ -56,65 +42,53 @@ func (repo *HistoryRepository) FindByOrderID(id uuid.UUID) (domain.History, erro
 	return domainHistory, nil
 }
 
-func (repo *HistoryRepository) FindByPaymentID(paymentID uuid.UUID) (domain.History, error) {
-	var history model.HistoryEntity
-	if err := repo.db.Where("payment_id = ?", paymentID).First(&history).Error; err != nil {
-		return domain.History{}, convertPostgresErrorToAppError(err)
-	}
-	domainHistory := repo.toHistoryDomain(history)
-	return domainHistory, nil
-}
+func (repo *HistoryRepository) Filter(filter domain.SearchHistory) ([]domain.History, error) {
+	q := repo.db.Model(&model.HistoryModel{})
 
-func (repo *HistoryRepository) FindByProductID(productID int) ([]domain.History, error) {
-	var historyList []model.HistoryEntity
-	if err := repo.db.Where("product_id = ?", productID).Find(&historyList).Error; err != nil {
+	if filter.Activation != nil {
+		q = q.Where("active = ?", *filter.Activation)
+	}
+
+	if filter.PaymentID != "" {
+		q = q.Where("payment_id = ?", filter.PaymentID)
+	}
+
+	if filter.OrderID != "" {
+		q = q.Where("order_id = ?", filter.OrderID)
+	}
+
+	if filter.VendorID != nil {
+		q = q.Where("vendor_id = ?", *filter.VendorID)
+	}
+
+	if filter.ProductID != nil {
+		q = q.Where("product_id = ?", *filter.ProductID)
+	}
+
+	if filter.Status != nil {
+		q = q.Where("status = ?", *filter.Status)
+	}
+
+	var histories []model.HistoryModel
+
+	err := q.Find(&histories).Error
+	if err != nil {
 		return nil, convertPostgresErrorToAppError(err)
 	}
 
-	domainHistoryList := repo.addToDomainList(historyList)
-	return domainHistoryList, nil
+	return repo.toHistoryDomains(histories), err
 }
 
-func (repo *HistoryRepository) FindByVendorID(vendorID int) ([]domain.History, error) {
-	var historyList []model.HistoryEntity
-	if err := repo.db.Where("vendor_id = ?", vendorID).Find(&historyList).Error; err != nil {
-		return nil, convertPostgresErrorToAppError(err)
+func (repo *HistoryRepository) toHistoryDomains(historyModels []model.HistoryModel) []domain.History {
+	histories := make([]domain.History, 0, len(historyModels))
+	for _, history := range histories {
+		histories = append(histories, history)
 	}
-
-	domainHistoryList := repo.addToDomainList(historyList)
-	return domainHistoryList, nil
+	return histories
 }
 
-func (repo *HistoryRepository) FindByStatus(status domain.Status) ([]domain.History, error) {
-	var historyList []model.HistoryEntity
-	if err := repo.db.Where("status = ?", status).Find(&historyList).Error; err != nil {
-		return nil, convertPostgresErrorToAppError(err)
-	}
-
-	domainHistoryList := repo.addToDomainList(historyList)
-	return domainHistoryList, nil
-}
-
-func (repo *HistoryRepository) FindByIsActive(isActive bool) ([]domain.History, error) {
-	var historyList []model.HistoryEntity
-	if err := repo.db.Where("is_active = ?", isActive).Find(&historyList).Error; err != nil {
-		return nil, convertPostgresErrorToAppError(err)
-	}
-
-	domainHistoryList := repo.addToDomainList(historyList)
-	return domainHistoryList, nil
-}
-
-func (repo *HistoryRepository) addToDomainList(historyList []model.HistoryEntity) []domain.History {
-	domainHistoryList := make([]domain.History, 0, len(historyList))
-	for _, history := range historyList {
-		domainHistoryList = append(domainHistoryList, repo.toHistoryDomain(history))
-	}
-	return domainHistoryList
-}
-
-func (repo *HistoryRepository) toHistoryEntity(domain domain.History) model.HistoryEntity {
-	return model.HistoryEntity{
+func (repo *HistoryRepository) toHistoryEntity(domain domain.History) model.HistoryModel {
+	return model.HistoryModel{
 		OrderID:   domain.OrderID,
 		PaymentID: domain.PaymentID,
 		Quantity:  domain.Quantity,
@@ -125,7 +99,7 @@ func (repo *HistoryRepository) toHistoryEntity(domain domain.History) model.Hist
 	}
 }
 
-func (repo *HistoryRepository) toHistoryDomain(history model.HistoryEntity) domain.History {
+func (repo *HistoryRepository) toHistoryDomain(history model.HistoryModel) domain.History {
 	return domain.History{
 		ID:        history.ID,
 		OrderID:   history.OrderID,

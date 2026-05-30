@@ -39,7 +39,7 @@ func (repo *ProductRepository) Update(product domain.Product) error {
 }
 
 func (repo *ProductRepository) Delete(id int) error {
-	if err := repo.db.Model(&model.ProductEntity{}).
+	if err := repo.db.Model(&model.ProductModel{}).
 		Where("id = ?", id).
 		Updates(map[string]any{
 			"active":     false,
@@ -52,9 +52,9 @@ func (repo *ProductRepository) Delete(id int) error {
 }
 
 func (repo *ProductRepository) Filter(filter domain.SearchProduct) ([]domain.Product, error) {
-	var entities []model.ProductEntity
+	var entities []model.ProductModel
 
-	query := repo.db.Model(&model.ProductEntity{})
+	query := repo.db.Model(&model.ProductModel{})
 
 	if filter.SearchName != "" {
 		query = query.Where(
@@ -71,7 +71,7 @@ func (repo *ProductRepository) Filter(filter domain.SearchProduct) ([]domain.Pro
 }
 
 func (repo *ProductRepository) FindById(id int) (domain.Product, error) {
-	var entity model.ProductEntity
+	var entity model.ProductModel
 
 	if err := repo.db.First(&entity, id).Error; err != nil {
 		return domain.Product{}, convertPostgresErrorToAppError(err)
@@ -80,8 +80,8 @@ func (repo *ProductRepository) FindById(id int) (domain.Product, error) {
 	return repo.toProductDomain(entity), nil
 }
 
-func (repo *ProductRepository) toProductEntity(product domain.Product) *model.ProductEntity {
-	return &model.ProductEntity{
+func (repo *ProductRepository) toProductEntity(product domain.Product) *model.ProductModel {
+	return &model.ProductModel{
 		ID:          product.ID,
 		Name:        product.Name,
 		Description: product.Description,
@@ -91,7 +91,7 @@ func (repo *ProductRepository) toProductEntity(product domain.Product) *model.Pr
 	}
 }
 
-func (repo *ProductRepository) toProductDomain(product model.ProductEntity) domain.Product {
+func (repo *ProductRepository) toProductDomain(product model.ProductModel) domain.Product {
 	return domain.Product{
 		ID:          product.ID,
 		Name:        product.Name,
@@ -103,7 +103,7 @@ func (repo *ProductRepository) toProductDomain(product model.ProductEntity) doma
 }
 
 func (repo *ProductRepository) toProductsDomain(
-	entities []model.ProductEntity,
+	entities []model.ProductModel,
 ) []domain.Product {
 	products := make([]domain.Product, 0, len(entities))
 

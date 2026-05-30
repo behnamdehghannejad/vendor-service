@@ -1,11 +1,12 @@
 -- +migrate Up
-CREATE TABLE history (
+CREATE TABLE histories (
     id BIGSERIAL PRIMARY KEY,
 
-    order_id UUID NOT NULL,
-    payment_id UUID NOT NULL,
+    order_id VARCHAR(100) NOT NULL,
+    payment_id VARCHAR(100) NOT NULL,
 
-    quantity INT NOT NULL,
+    quantity INT NOT NULL CHECK (quantity > 0),
+
     product_id INT NOT NULL,
     vendor_id INT NOT NULL,
 
@@ -18,4 +19,4 @@ CREATE TABLE history (
 
 
 -- +migrate Down
-DROP TABLE IF EXISTS history;
+DROP TABLE IF EXISTS histories;

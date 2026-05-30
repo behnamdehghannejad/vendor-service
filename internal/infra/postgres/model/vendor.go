@@ -2,7 +2,7 @@ package model
 
 import "time"
 
-type VendorEntity struct {
+type VendorModel struct {
 	ID        int       `gorm:"primaryKey"`
 	Code      string    `gorm:"size:50"`
 	Name      string    `gorm:"size:200"`
@@ -14,6 +14,6 @@ type VendorEntity struct {
 	UpdatedAt time.Time `gorm:column"updated_at"`
 }
 
-func (VendorEntity) TableName() string {
+func (VendorModel) TableName() string {
 	return "vendors"
 }

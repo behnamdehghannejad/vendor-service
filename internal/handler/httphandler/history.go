@@ -2,161 +2,68 @@ package httphandler
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
 	"github.com/behnamdehghannejad/vendorservice/internal/handler/dto"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/httperror"
 	"github.com/behnamdehghannejad/vendorservice/internal/port"
-	"github.com/behnamdehghannejad/vendorservice/internal/validator"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type History struct {
-	service   port.HistoryService
-	validator *validator.History
+	service port.HistoryService
 }
 
-func NewHistoryHandler(service port.HistoryService, validator *validator.History) *History {
+func NewHistoryHandler(service port.HistoryService) *History {
 	return &History{
-		service:   service,
-		validator: validator,
+		service: service,
 	}
 }
 
-func (h *History) GetByOrderID(c *gin.Context) {
-	idStr := c.Param("id")
+func (h *History) Search(c *gin.Context) {
+	var q dto.SearchHistory
 
-	id, err := uuid.Parse(idStr)
+	if err := c.ShouldBindQuery(&q); err != nil {
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
+		return
+	}
+
+	histories, err := h.service.Search(domain.SearchHistory{
+		Activation: h.GetIsActiveFromQuery(q.Activation),
+		PaymentID:  q.PaymentID,
+		OrderID:    q.OrderID,
+		VendorID:   q.VendorID,
+		ProductID:  q.ProductID,
+		Status:     q.Status,
+	})
 	if err != nil {
 		errorResponse, status := httperror.Handle(err)
 		c.JSON(status, errorResponse)
 		return
 	}
 
-	history, err := h.service.FindByOrderID(id)
-	if err != nil {
-		errorResponse, status := httperror.Handle(err)
-		c.JSON(status, errorResponse)
-		return
-	}
-
-	c.JSON(http.StatusOK, h.serializeHistory(history))
+	c.JSON(http.StatusOK, dto.ResponseHistories{
+		Items: h.serializeHistories(histories),
+	})
 }
 
-func (h *History) GetByPaymentID(c *gin.Context) {
-	idStr := c.Param("id")
-
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		errorResponse, status := httperror.Handle(err)
-		c.JSON(status, errorResponse)
-		return
+func (*History) GetIsActiveFromQuery(activeStr string) *bool {
+	active := true
+	deActive := false
+	switch activeStr {
+	case "active":
+		return &active
+	case "deactive":
+		return &deActive
 	}
-
-	history, err := h.service.FindByPaymentID(id)
-	if err != nil {
-		errorResponse, status := httperror.Handle(err)
-		c.JSON(status, errorResponse)
-		return
-	}
-
-	c.JSON(http.StatusOK, h.serializeHistory(history))
-}
-
-func (h *History) GetByProductID(c *gin.Context) {
-	idStr := c.Param("id")
-
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		errorResponse, status := httperror.Handle(err)
-		c.JSON(status, errorResponse)
-		return
-	}
-
-	histories, err := h.service.FindByProductID(id)
-	if err != nil {
-		errorResponse, status := httperror.Handle(err)
-		c.JSON(status, errorResponse)
-		return
-	}
-
-	c.JSON(http.StatusOK, h.serializeHistories(histories))
-}
-
-func (h *History) GetByVendorID(c *gin.Context) {
-	idStr := c.Param("id")
-
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		errorResponse, status := httperror.Handle(err)
-		c.JSON(status, errorResponse)
-		return
-	}
-
-	histories, err := h.service.FindByVendorID(id)
-	if err != nil {
-		errorResponse, status := httperror.Handle(err)
-		c.JSON(status, errorResponse)
-		return
-	}
-
-	c.JSON(http.StatusOK, h.serializeHistories(histories))
-}
-
-func (h *History) GetByStatus(c *gin.Context) {
-	status := c.Param("status")
-
-	histories, err := h.service.FindByStatus(domain.Status(status))
-	if err != nil {
-		errorResponse, status := httperror.Handle(err)
-		c.JSON(status, errorResponse)
-		return
-	}
-
-	c.JSON(http.StatusOK, h.serializeHistories(histories))
-}
-
-func (h *History) GetByIsActive(c *gin.Context) {
-	activeStr := c.Param("active")
-
-	active, err := strconv.ParseBool(activeStr)
-	if err != nil {
-		errorResponse, status := httperror.Handle(err)
-		c.JSON(status, errorResponse)
-		return
-	}
-
-	histories, err := h.service.FindByIsActive(active)
-	if err != nil {
-		errorResponse, status := httperror.Handle(err)
-		c.JSON(status, errorResponse)
-		return
-	}
-
-	c.JSON(http.StatusOK, h.serializeHistories(histories))
-}
-
-func (h *History) toHistoryDomain(req dto.CreateHistoryRequest) domain.History {
-	orderID, _ := uuid.Parse(req.OrderID)
-	paymentID, _ := uuid.Parse(req.PaymentID)
-
-	return domain.History{
-		OrderID:   orderID,
-		PaymentID: paymentID,
-		Quantity:  req.Quantity,
-		ProductID: req.ProductID,
-		VendorID:  req.VendorID,
-		Status:    domain.CREATED,
-		Active:    true,
-	}
+	return nil
 }
 
 func (h *History) serializeHistory(history domain.History) dto.HistoryResponse {
 	return dto.HistoryResponse{
-		OrderID:   history.OrderID.String(),
-		PaymentID: history.PaymentID.String(),
+		OrderID:   history.OrderID,
+		PaymentID: history.PaymentID,
 		Quantity:  history.Quantity,
 		ProductID: history.ProductID,
 		VendorID:  history.VendorID,
