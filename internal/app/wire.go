@@ -42,7 +42,14 @@ func Run() {
 		return
 	}
 
-	server := createServer(cfg.App, historyService, vendorService, productService, inventoryService, orderService)
+	server := createServer(
+		cfg.App,
+		historyService,
+		vendorService,
+		productService,
+		inventoryService,
+		orderService,
+	)
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
@@ -142,8 +149,6 @@ func createServer(
 		productHandler,
 	)
 
-	registerMetrics(router)
-
 	return &http.Server{
 		Addr:              getAddress(cfg.Host, cfg.Port),
 		Handler:           router,
@@ -199,6 +204,11 @@ func registerRoutes(
 	vendorHandler *httphandler.Vendor,
 	productHandler *httphandler.Product,
 ) {
+	router.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{"pong": true})
+	})
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
 	router.POST("/api/v1/vendors", vendorHandler.Create)
 	router.GET("/api/v1/vendors/:id", vendorHandler.GetById)
 	router.DELETE("/api/v1/vendors/:id", vendorHandler.Delete)
@@ -210,14 +220,6 @@ func registerRoutes(
 	router.PATCH("api/v1/products/:id", productHandler.Update)
 
 	router.GET("/api/v1/histories", historyHandler.Search)
-}
-
-func registerMetrics(router *gin.Engine) {
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{"pong": true})
-	})
-
-	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 }
 
 func getAddress(host string, port string) string {
