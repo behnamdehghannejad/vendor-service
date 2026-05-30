@@ -20,5 +20,5 @@ type HistoryModel struct {
 }
 
 func (HistoryModel) TableName() string {
-	return "histories" // or "history"
+	return "histories"
 }
