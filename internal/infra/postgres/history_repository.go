@@ -88,6 +88,7 @@ func (repo *HistoryRepository) toHistoryDomains(historyModels []model.HistoryMod
 
 func (repo *HistoryRepository) toHistoryEntity(domain domain.History) model.HistoryModel {
 	return model.HistoryModel{
+		ID:        domain.ID,
 		Reserved:  domain.Reserved,
 		ProductID: domain.ProductID,
 		VendorID:  domain.VendorID,
