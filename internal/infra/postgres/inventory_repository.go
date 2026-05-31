@@ -41,11 +41,14 @@ func (repo *InventoryRepository) Upsert(inventory domain.Inventory) error {
 	return nil
 }
 
-func (repo *InventoryRepository) IncreaseReserveInventory(vendorID int, productID int, reserve int) error {
+func (repo *InventoryRepository) IncreaseReserveInventory(requestReserve domain.RequestReserve) error {
 	err := repo.db.Model(&model.InventoryModel{}).
-		Where("product_id = ? AND vendor_id = ?", productID, vendorID).
-		UpdateColumn("reserved", gorm.Expr("reserved + ?", reserve)).
-		Error
+		Where("product_id = ? AND vendor_id = ?", requestReserve.ProductID, requestReserve.VendorID).
+		Updates(map[string]interface{}{
+			"reserved":   gorm.Expr("reserved + ?", requestReserve.Reserved),
+			"version":    gorm.Expr("version + 1"),
+			"updated_at": gorm.Expr("CURRENT_TIMESTAMP"),
+		}).Error
 	if err != nil {
 		return convertPostgresErrorToAppError(err)
 	}

@@ -33,8 +33,8 @@ func NewInventoryUnitOfWork(
 	}, nil
 }
 
-func (iuw *InventoryUnitOfWork) IncreaseReserveInventory(vendorID int, productID int, reserved int) error {
-	return iuw.inventoryRepo.IncreaseReserveInventory(vendorID, productID, reserved)
+func (iuw *InventoryUnitOfWork) IncreaseReserveInventory(requestReserve domain.RequestReserve) error {
+	return iuw.inventoryRepo.IncreaseReserveInventory(requestReserve)
 }
 
 func (iuw *InventoryUnitOfWork) CreateHistory(history domain.History) error {
