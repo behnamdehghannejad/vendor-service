@@ -62,11 +62,10 @@ func (*History) GetIsActiveFromQuery(activeStr string) *bool {
 
 func (h *History) serializeHistory(history domain.History) dto.HistoryResponse {
 	return dto.HistoryResponse{
-		Quantity:  history.Quantity,
+		Reserved:  history.Reserved,
 		ProductID: history.ProductID,
 		VendorID:  history.VendorID,
 		Status:    string(history.Status),
-		Active:    history.Active,
 		CreatedAt: history.CreatedAt,
 		UpdatedAt: history.UpdatedAt,
 	}

@@ -13,10 +13,6 @@ func NewHistoryService(repository port.HistoryRepository) *HistoryService {
 	return &HistoryService{repository: repository}
 }
 
-func (s *HistoryService) Create(history domain.History) error {
-	return s.repository.Add(history)
-}
-
 func (s *HistoryService) Update(history domain.History) error {
 	return s.repository.Update(history)
 }

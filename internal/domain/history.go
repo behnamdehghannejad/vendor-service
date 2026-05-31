@@ -6,11 +6,10 @@ import (
 
 type History struct {
 	ID        string
-	Quantity  int
+	Reserved  int
 	ProductID int
 	VendorID  int
 	Status    HistoryStatus
-	Active    bool
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -18,6 +17,6 @@ type History struct {
 type HistoryStatus string
 
 const (
-	DRAFTED HistoryStatus = "DRAFTED"
-	SUCCESS HistoryStatus = "SUCCESS"
+	HISTORY_DRAFT   HistoryStatus = "DRAFTED"
+	HISTORY_SUCCESS HistoryStatus = "SUCCESS"
 )

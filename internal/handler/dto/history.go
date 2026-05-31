@@ -9,7 +9,7 @@ import (
 type HistoryResponse struct {
 	OrderID   string    `json:"order_id"`
 	PaymentID string    `json:"payment_id"`
-	Quantity  int       `json:"quantity"`
+	Reserved  int       `json:"quantity"`
 	ProductID int       `json:"product_id"`
 	VendorID  int       `json:"vendor_id"`
 	Status    string    `json:"status"`

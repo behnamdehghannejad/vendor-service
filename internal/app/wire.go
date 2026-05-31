@@ -130,7 +130,7 @@ func createServer(
 	router.Use(gin.Recovery())
 	router.Use(metrics.PrometheusMiddleware())
 
-	historyHandler, vendorHandler, productHandler, _ := registerHandlers(
+	historyHandler, vendorHandler, productHandler := registerHandlers(
 		historyService,
 		inventoryService,
 		vendorService,
@@ -163,7 +163,6 @@ func registerHandlers(
 	*httphandler.History,
 	*httphandler.Vendor,
 	*httphandler.Product,
-	*httphandler.Inventory,
 ) {
 	historyHandler := httphandler.NewHistoryHandler(
 		historyService,
@@ -179,12 +178,7 @@ func registerHandlers(
 		validator.NewProduct(productService),
 	)
 
-	inventoryHandler := httphandler.NewInventoryHandler(
-		inventoryService,
-		validator.NewInventory(inventoryService),
-	)
-
-	return historyHandler, vendorHandler, productHandler, inventoryHandler
+	return historyHandler, vendorHandler, productHandler
 }
 
 func registerRoutes(

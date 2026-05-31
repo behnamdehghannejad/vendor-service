@@ -3,6 +3,7 @@ package postgres
 import (
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
 	"github.com/behnamdehghannejad/vendorservice/internal/infra/postgres/model"
+	"github.com/behnamdehghannejad/vendorservice/internal/pkg/apperror"
 
 	"gorm.io/gorm"
 )
@@ -18,13 +19,30 @@ func NewInventoryRepository(db *gorm.DB) *InventoryRepository {
 }
 
 func (repo *InventoryRepository) Create(inventory domain.Inventory) error {
-	return repo.db.Save(toInventoryEntity(inventory)).Error
+	err := repo.db.Save(toInventoryEntity(inventory)).Error
+	if err != nil {
+		return apperror.Wrap(err).
+			UnExpected().
+			Build()
+	}
+	return nil
 }
 
-func (repo *InventoryRepository) FindByVendorIDAndProductID(vendorID int, productID int) (domain.Inventory, error) {
+func (repo *InventoryRepository) IncreaseReserveInventory(vendorID int, productID int, reserve int) error {
+	err := repo.db.Model(&model.InventoryModel{}).
+		Where("product_id = ? AND vendor_id = ?", productID, vendorID).
+		UpdateColumn("reserved", gorm.Expr("reserved + ?", reserve)).
+		Error
+	if err != nil {
+		return convertPostgresErrorToAppError(err)
+	}
+	return nil
+}
+
+func (repo *InventoryRepository) FindInventory(vendorID int, productID int) (domain.Inventory, error) {
 	var inventoryEntity model.InventoryModel
 	if err := repo.db.Where("vendor_id = ? AND product_id = ?", vendorID, productID).First(&inventoryEntity).Error; err != nil {
-		return domain.Inventory{}, err
+		return domain.Inventory{}, convertPostgresErrorToAppError(err)
 	}
 
 	return toInventoryDomain(inventoryEntity), nil

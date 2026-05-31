@@ -1,8 +1,6 @@
 package postgres
 
 import (
-	"time"
-
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
 	"github.com/behnamdehghannejad/vendorservice/internal/infra/postgres/model"
 
@@ -19,7 +17,7 @@ func NewHistoryRepository(db *gorm.DB) *HistoryRepository {
 	}
 }
 
-func (repo *HistoryRepository) Add(history domain.History) error {
+func (repo *HistoryRepository) Create(history domain.History) error {
 	if err := repo.db.Create(repo.toHistoryEntity(history)).Error; err != nil {
 		return convertPostgresErrorToAppError(err)
 	}
@@ -89,22 +87,19 @@ func (repo *HistoryRepository) toHistoryDomains(historyModels []model.HistoryMod
 
 func (repo *HistoryRepository) toHistoryEntity(domain domain.History) model.HistoryModel {
 	return model.HistoryModel{
-		Quantity:  domain.Quantity,
+		Reserved:  domain.Reserved,
 		ProductID: domain.ProductID,
 		VendorID:  domain.VendorID,
-		Active:    domain.Active,
-		CreatedAt: time.Now(),
 	}
 }
 
 func (repo *HistoryRepository) toHistoryDomain(history model.HistoryModel) domain.History {
 	return domain.History{
 		ID:        history.ID,
-		Quantity:  history.Quantity,
+		Reserved:  history.Reserved,
 		ProductID: history.ProductID,
 		VendorID:  history.VendorID,
 		Status:    history.Status,
-		Active:    history.Active,
 		CreatedAt: history.CreatedAt,
 		UpdatedAt: history.UpdatedAt,
 	}
