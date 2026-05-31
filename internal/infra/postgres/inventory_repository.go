@@ -75,7 +75,6 @@ func (repo *InventoryRepository) Update(inventory domain.Inventory) error {
 
 func toInventoryEntity(inventory domain.Inventory) model.InventoryModel {
 	return model.InventoryModel{
-		ID:        inventory.ID,
 		ProductID: inventory.ProductID,
 		VendorID:  inventory.VendorID,
 		Quantity:  inventory.Quantity,
@@ -85,7 +84,6 @@ func toInventoryEntity(inventory domain.Inventory) model.InventoryModel {
 
 func toInventoryDomain(entity model.InventoryModel) domain.Inventory {
 	return domain.Inventory{
-		ID:        entity.ID,
 		VendorID:  entity.VendorID,
 		ProductID: entity.ProductID,
 		Quantity:  entity.Quantity,

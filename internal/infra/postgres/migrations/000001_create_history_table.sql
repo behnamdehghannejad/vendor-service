@@ -2,7 +2,7 @@
 CREATE TABLE histories (
     id VARCHAR(36) PRIMARY KEY,
 
-    reserved INT NOT NULL CHECK (quantity > 0),
+    reserved INT NOT NULL CHECK (reserved > 0),
 
     product_id INT NOT NULL,
     vendor_id INT NOT NULL,
