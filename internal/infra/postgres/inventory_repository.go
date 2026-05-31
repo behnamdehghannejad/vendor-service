@@ -73,8 +73,33 @@ func (repo *InventoryRepository) GetInventoryByVendorAndProduct(vendorID int, pr
 	return repo.toInventoryDomain(inventoryModel), nil
 }
 
-func (repo *InventoryRepository) Update(inventory domain.Inventory) error {
-	return repo.db.Save(repo.toInventoryModel(inventory)).Error
+func (repo *InventoryRepository) Filter(filter domain.SearchInventory) ([]domain.Inventory, error) {
+	var inventories []model.InventoryModel
+
+	query := repo.db.Model(&model.InventoryModel{})
+
+	if filter.VendorID != nil {
+		query = query.Where("vendor_id = ?", *filter.VendorID)
+	}
+
+	if filter.ProductID != nil {
+		query = query.Where("product_id = ?", *filter.ProductID)
+	}
+
+	err := query.Find(&inventories).Error
+	if err != nil {
+		return nil, convertPostgresErrorToAppError(err)
+	}
+
+	return repo.toInventoryDomains(inventories), nil
+}
+
+func (repo *InventoryRepository) toInventoryDomains(inventoryModels []model.InventoryModel) []domain.Inventory {
+	inventoryDomains := make([]domain.Inventory, 0, len(inventoryModels))
+	for _, inventoryModel := range inventoryModels {
+		inventoryDomains = append(inventoryDomains, repo.toInventoryDomain(inventoryModel))
+	}
+	return inventoryDomains
 }
 
 func (repo *InventoryRepository) toInventoryModel(inventory domain.Inventory) model.InventoryModel {
@@ -87,12 +112,12 @@ func (repo *InventoryRepository) toInventoryModel(inventory domain.Inventory) mo
 	}
 }
 
-func (repo *InventoryRepository) toInventoryDomain(entity model.InventoryModel) domain.Inventory {
+func (repo *InventoryRepository) toInventoryDomain(inventoryModel model.InventoryModel) domain.Inventory {
 	return domain.Inventory{
-		VendorID:  entity.VendorID,
-		ProductID: entity.ProductID,
-		Quantity:  entity.Quantity,
-		Reserved:  entity.Reserved,
-		V:         entity.V,
+		VendorID:  inventoryModel.VendorID,
+		ProductID: inventoryModel.ProductID,
+		Quantity:  inventoryModel.Quantity,
+		Reserved:  inventoryModel.Reserved,
+		V:         inventoryModel.V,
 	}
 }

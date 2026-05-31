@@ -83,6 +83,28 @@ func (i *Inventory) Upsert(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (i *Inventory) Search(c *gin.Context) {
+	var req dto.SearchInventory
+	if err := c.ShouldBindQuery(&req); err != nil {
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
+		return
+	}
+
+	inventories, err := i.inventoryService.Search(domain.SearchInventory{
+		VendorID:  req.VendorID,
+		ProductID: req.ProductID,
+	})
+	if err != nil {
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
+		return
+	}
+	c.JSON(http.StatusOK, dto.ResponseInventories{
+		Items: i.serializeInventories(inventories),
+	})
+}
+
 func (i *Inventory) Reserve(c *gin.Context) {
 	vendorID, productID, err := i.GetIDs(c)
 	if err != nil {
@@ -124,4 +146,21 @@ func (i *Inventory) GetIDs(c *gin.Context) (int, int, error) {
 	productID, _ := strconv.Atoi(ids[1])
 
 	return vendorID, productID, nil
+}
+
+func (i *Inventory) serializeInventories(inventories []domain.Inventory) []dto.ResponseInventory {
+	inventoriesResponse := make([]dto.ResponseInventory, 0, len(inventories))
+	for _, inventory := range inventories {
+		inventoriesResponse = append(inventoriesResponse, i.serializeInventory(inventory))
+	}
+	return inventoriesResponse
+}
+
+func (i *Inventory) serializeInventory(inventory domain.Inventory) dto.ResponseInventory {
+	return dto.ResponseInventory{
+		VendorID:  inventory.VendorID,
+		ProductID: inventory.ProductID,
+		Quantity:  inventory.Quantity,
+		Reserved:  inventory.Reserved,
+	}
 }

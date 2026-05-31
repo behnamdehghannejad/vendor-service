@@ -202,6 +202,7 @@ func registerRoutes(
 	})
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
+	router.GET("/api/v1/inventories", inventoryHandler.Search)
 	router.GET(
 		"/api/v1/inventories/:vpIDs",
 		inventoryHandler.GetInventory,
