@@ -19,21 +19,22 @@ func NewInventoryRepository(db *gorm.DB) *InventoryRepository {
 }
 
 func (repo *InventoryRepository) Upsert(inventory domain.Inventory) error {
+	inventoryModel := repo.toInventoryEntity(inventory)
 	err := repo.db.Clauses(clause.OnConflict{
 		Columns: []clause.Column{
 			{Name: "vendor_id"},
 			{Name: "product_id"},
 		},
-		DoUpdates: clause.AssignmentColumns([]string{
-			"quantity",
-			"updated_at",
+		DoUpdates: clause.Assignments(map[string]interface{}{
+			"quantity": gorm.Expr("EXCLUDED.quantity"),
+			"version":  gorm.Expr("inventories.version + 1"),
 		}),
-	}).Create(&model.InventoryModel{
-		VendorID:  inventory.VendorID,
-		ProductID: inventory.ProductID,
-		Quantity:  inventory.Quantity,
-		Reserved:  0,
-	}).Error
+		Where: clause.Where{
+			Exprs: []clause.Expression{
+				gorm.Expr("inventories.version = ?", inventory.V),
+			},
+		},
+	}).Create(&inventoryModel).Error
 	if err != nil {
 		return convertPostgresErrorToAppError(err)
 	}
@@ -57,7 +58,7 @@ func (repo *InventoryRepository) GetInventory(vendorID int, productID int) (doma
 		return domain.Inventory{}, convertPostgresErrorToAppError(err)
 	}
 
-	return toInventoryDomain(inventoryEntity), nil
+	return repo.toInventoryDomain(inventoryEntity), nil
 }
 
 func (repo *InventoryRepository) GetInventoryByVendorAndProduct(vendorID int, productID int) (domain.Inventory, error) {
@@ -66,27 +67,29 @@ func (repo *InventoryRepository) GetInventoryByVendorAndProduct(vendorID int, pr
 		return domain.Inventory{}, convertPostgresErrorToAppError(err)
 	}
 
-	return toInventoryDomain(inventoryEntity), nil
+	return repo.toInventoryDomain(inventoryEntity), nil
 }
 
 func (repo *InventoryRepository) Update(inventory domain.Inventory) error {
-	return repo.db.Save(toInventoryEntity(inventory)).Error
+	return repo.db.Save(repo.toInventoryEntity(inventory)).Error
 }
 
-func toInventoryEntity(inventory domain.Inventory) model.InventoryModel {
+func (repo *InventoryRepository) toInventoryEntity(inventory domain.Inventory) model.InventoryModel {
 	return model.InventoryModel{
 		ProductID: inventory.ProductID,
 		VendorID:  inventory.VendorID,
 		Quantity:  inventory.Quantity,
 		Reserved:  inventory.Reserved,
+		V:         inventory.V,
 	}
 }
 
-func toInventoryDomain(entity model.InventoryModel) domain.Inventory {
+func (repo *InventoryRepository) toInventoryDomain(entity model.InventoryModel) domain.Inventory {
 	return domain.Inventory{
 		VendorID:  entity.VendorID,
 		ProductID: entity.ProductID,
 		Quantity:  entity.Quantity,
 		Reserved:  entity.Reserved,
+		V:         entity.V,
 	}
 }

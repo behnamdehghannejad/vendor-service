@@ -26,8 +26,22 @@ func (s *InventoryService) FindInventory(vendorID int, productID int) (domain.In
 	return s.repository.GetInventory(vendorID, productID)
 }
 
-func (s *InventoryService) Upsert(inventory domain.Inventory) error {
-	return s.repository.Upsert(inventory)
+func (s *InventoryService) Upsert(inventoryRequest domain.Inventory) error {
+	inventory, err := s.repository.GetInventory(inventoryRequest.VendorID, inventoryRequest.ProductID)
+	if appErr, ok := err.(*apperror.AppError); ok && appErr.GetErrorType() != apperror.NotFound {
+		return err
+	}
+
+	if inventory.Reserved > inventoryRequest.Quantity {
+		return apperror.Wrap(err).
+			BadRequest().
+			Warningf("the request quantity must bel less than reserved").
+			Build()
+	}
+
+	inventoryRequest.V = inventory.V
+
+	return s.repository.Upsert(inventoryRequest)
 }
 
 func (s *InventoryService) ReserveQuantity(reserveRequest domain.ReserveRequest) error {

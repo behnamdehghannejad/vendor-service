@@ -5,6 +5,7 @@ type InventoryModel struct {
 	ProductID int `gorm:"column:product_id"`
 	Quantity  int `gorm:"column:quantity"`
 	Reserved  int `gorm:"column:reserved"`
+	V         int `gorm:"column:version"`
 }
 
 func (InventoryModel) TableName() string {

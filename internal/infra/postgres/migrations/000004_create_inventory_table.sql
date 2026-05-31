@@ -7,12 +7,15 @@ CREATE TABLE inventories (
     quantity INT NOT NULL CHECK (quantity >= 0),
     reserved INT NOT NULL DEFAULT 0 CHECK (reserved >= 0),
 
+    version INT NOT NULL DEFAULT 1,
+
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (vendor_id, product_id),
 
-    CONSTRAINT chk_inventory_reserved_leq_quantity CHECK (reserved <= quantity),
+    CONSTRAINT chk_inventory_reserved_leq_quantity
+        CHECK (reserved <= quantity),
 
     CONSTRAINT fk_inventories_vendor
         FOREIGN KEY (vendor_id) REFERENCES vendors(id)

@@ -5,4 +5,5 @@ type Inventory struct {
 	ProductID int
 	Quantity  int
 	Reserved  int
+	V         int
 }
