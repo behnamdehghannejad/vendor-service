@@ -18,7 +18,8 @@ func NewHistoryRepository(db *gorm.DB) *HistoryRepository {
 }
 
 func (repo *HistoryRepository) Create(history domain.History) error {
-	if err := repo.db.Create(repo.toHistoryEntity(history)).Error; err != nil {
+	historyModel := repo.toHistoryEntity(history)
+	if err := repo.db.Create(&historyModel).Error; err != nil {
 		return convertPostgresErrorToAppError(err)
 	}
 	return nil

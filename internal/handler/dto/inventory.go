@@ -10,3 +10,8 @@ type ResponseInventory struct {
 type RequestUpsertInventory struct {
 	Quantity int `json:"quantity"`
 }
+
+type RequestReserve struct {
+	Reserve   int    `json:"reserve"`
+	RequestID string `json:"request_id"`
+}

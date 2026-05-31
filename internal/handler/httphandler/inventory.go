@@ -3,6 +3,7 @@ package httphandler
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
 	"github.com/behnamdehghannejad/vendorservice/internal/handler/dto"
@@ -82,17 +83,40 @@ func (i *Inventory) Upsert(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func (i *Inventory) GetIDs(c *gin.Context) (int, int, error) {
-	vendorIDStr := c.Param("vendor_id")
-	productIDStr := c.Param("product_id")
+func (i *Inventory) Reserve(c *gin.Context) {
+	vendorID, productID, err := i.GetIDs(c)
+	if err != nil {
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
+		return
+	}
 
-	err := i.validator.ValidateIDs(vendorIDStr, productIDStr)
+	var req dto.RequestReserve
+	if err := c.ShouldBind(&req); err != nil {
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
+		return
+	}
+
+	err = i.inventoryService.ReserveQuantity(vendorID, productID, req.Reserve, req.RequestID)
+	if err != nil {
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+func (i *Inventory) GetIDs(c *gin.Context) (int, int, error) {
+	ids := strings.Split(c.Param("vpIDs"), "-")
+	err := i.validator.ValidateIDs(ids[0], ids[1])
 	if err != nil {
 		return 0, 0, err
 	}
 
-	vendorID, _ := strconv.Atoi(vendorIDStr)
-	productID, _ := strconv.Atoi(productIDStr)
+	vendorID, _ := strconv.Atoi(ids[0])
+	productID, _ := strconv.Atoi(ids[1])
 
 	return vendorID, productID, nil
 }

@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 
+	"github.com/behnamdehghannejad/vendorservice/internal/port"
 	"gorm.io/gorm"
 )
 
@@ -20,6 +21,6 @@ func NewUnitOfWorkFactory(db *gorm.DB) *UnitOfWordFactory {
 	}
 }
 
-func (uof *UnitOfWordFactory) CreateInventoryUnitOfWork(ctx context.Context) (*InventoryUnitOfWork, error) {
+func (uof *UnitOfWordFactory) CreateInventoryUnitOfWork(ctx context.Context) (port.InventoryUnitOfWork, error) {
 	return NewInventoryUnitOfWork(uof.db, ctx)
 }

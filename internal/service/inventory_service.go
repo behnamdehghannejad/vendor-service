@@ -15,8 +15,11 @@ type InventoryService struct {
 	unitOfWorkFactory port.UnitOfWorkFactor
 }
 
-func NewInventoryService(repository port.InventoryRepository) *InventoryService {
-	return &InventoryService{repository: repository}
+func NewInventoryService(repository port.InventoryRepository, unitOfWorkFactor port.UnitOfWorkFactor) *InventoryService {
+	return &InventoryService{
+		repository:        repository,
+		unitOfWorkFactory: unitOfWorkFactor,
+	}
 }
 
 func (s *InventoryService) FindInventory(vendorID int, productID int) (domain.Inventory, error) {
@@ -27,7 +30,7 @@ func (s *InventoryService) Upsert(inventory domain.Inventory) error {
 	return s.repository.Upsert(inventory)
 }
 
-func (s *InventoryService) ReserveQuantity(vendorID int, productID int, reserved int) error {
+func (s *InventoryService) ReserveQuantity(vendorID int, productID int, reserved int, requestID string) error {
 	if err := s.checkEnoughQuantityForReserving(vendorID, productID, reserved); err != nil {
 		return err
 	}
@@ -56,6 +59,8 @@ func (s *InventoryService) ReserveQuantity(vendorID int, productID int, reserved
 	}
 
 	err = iwf.CreateHistory(domain.History{
+		ID:        requestID,
+		Reserved:  reserved,
 		VendorID:  vendorID,
 		ProductID: productID,
 		Status:    domain.HISTORY_DRAFT,

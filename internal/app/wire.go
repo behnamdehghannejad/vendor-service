@@ -85,10 +85,12 @@ func registerServices(cfg postgres.PostgresConfig) (
 	productRepository := postgres.NewProductRepository(db)
 	inventoryRepository := postgres.NewInventoryRepository(db)
 
+	unitOfWorkFactory := postgres.NewUnitOfWorkFactory(db)
+
 	historyService := service.NewHistoryService(historyRepository)
 	vendorService := service.NewVendorService(vendorRepository)
 	productService := service.NewProductService(productRepository)
-	inventoryService := service.NewInventoryService(inventoryRepository)
+	inventoryService := service.NewInventoryService(inventoryRepository, unitOfWorkFactory)
 
 	return historyService, vendorService, productService, inventoryService, nil
 }
@@ -200,8 +202,18 @@ func registerRoutes(
 	})
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
-	router.GET("/api/v1/inventories/vendors/:vendor_id/products/:product_id", inventoryHandler.GetInventory)
-	router.PUT("/api/v1/inventories/vendors/:vendor_id/products/:product_id", inventoryHandler.Upsert)
+	router.GET(
+		"/api/v1/inventories/:vpIDs",
+		inventoryHandler.GetInventory,
+	)
+	router.PUT(
+		"/api/v1/inventories/:vpIDs",
+		inventoryHandler.Upsert,
+	)
+	router.POST(
+		"/api/v1/inventories/:vpIDs/reserve",
+		inventoryHandler.Reserve,
+	)
 
 	router.POST("/api/v1/vendors", vendorHandler.Create)
 	router.GET("/api/v1/vendors/:id", vendorHandler.GetById)

@@ -3,7 +3,7 @@ package port
 import "github.com/behnamdehghannejad/vendorservice/internal/domain"
 
 type InventoryService interface {
-	ReserveQuantity(vendorID int, productID int, reserved int) error
+	ReserveQuantity(int, int, int, string) error
 	FindInventory(int, int) (domain.Inventory, error)
 	Upsert(domain.Inventory) error
 }
