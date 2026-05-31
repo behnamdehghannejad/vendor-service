@@ -14,7 +14,7 @@ func NewProductService(repository port.ProductRepository) *ProductService {
 }
 
 func (s *ProductService) Create(product domain.Product) error {
-	return s.repository.Add(product)
+	return s.repository.Create(product)
 }
 
 func (s *ProductService) Update(product domain.Product) error {

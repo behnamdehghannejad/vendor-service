@@ -19,7 +19,7 @@ func NewVendorRepository(db *gorm.DB) *VendorRepository {
 	}
 }
 
-func (repo *VendorRepository) Add(v domain.Vendor) error {
+func (repo *VendorRepository) Create(v domain.Vendor) error {
 	entity := repo.toVendorModel(v)
 
 	if err := repo.db.Create(&entity).Error; err != nil {

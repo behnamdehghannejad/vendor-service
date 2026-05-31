@@ -18,7 +18,7 @@ func NewProductRepository(db *gorm.DB) *ProductRepository {
 	}
 }
 
-func (repo *ProductRepository) Add(product domain.Product) error {
+func (repo *ProductRepository) Create(product domain.Product) error {
 	entity := repo.toProductModel(product)
 
 	if err := repo.db.Create(entity).Error; err != nil {
