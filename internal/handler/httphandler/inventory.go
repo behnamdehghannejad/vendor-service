@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/behnamdehghannejad/vendorservice/internal/domain"
 	"github.com/behnamdehghannejad/vendorservice/internal/handler/dto"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/httperror"
 	"github.com/behnamdehghannejad/vendorservice/internal/port"
@@ -44,6 +45,41 @@ func (i *Inventory) GetInventory(c *gin.Context) {
 		VendorID:  inventory.VendorID,
 		ProductID: inventory.ProductID,
 	})
+}
+
+func (i *Inventory) Upsert(c *gin.Context) {
+	vendorID, productID, err := i.GetIDs(c)
+	if err != nil {
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
+		return
+	}
+
+	var req dto.RequestUpsertInventory
+	if err := c.ShouldBind(&req); err != nil {
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
+		return
+	}
+
+	if err := i.validator.Upsert(req); err != nil {
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
+		return
+	}
+
+	err = i.inventoryService.Upsert(domain.Inventory{
+		VendorID:  vendorID,
+		ProductID: productID,
+		Quantity:  req.Quantity,
+	})
+	if err != nil {
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
 
 func (i *Inventory) GetIDs(c *gin.Context) (int, int, error) {

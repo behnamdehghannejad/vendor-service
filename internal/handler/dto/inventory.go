@@ -6,3 +6,7 @@ type ResponseInventory struct {
 	ProductID int `json:"product_id"`
 	Quantity  int `json:"quantity"`
 }
+
+type RequestUpsertInventory struct {
+	Quantity int `json:"quantity"`
+}

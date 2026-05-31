@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"github.com/behnamdehghannejad/vendorservice/internal/handler/dto"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/apperror"
 	"github.com/behnamdehghannejad/vendorservice/internal/port"
 	validation "github.com/go-ozzo/ozzo-validation"
@@ -38,5 +39,20 @@ func (i *Inventory) ValidateIDs(vendorID string, productID string) error {
 			Build()
 	}
 
+	return nil
+}
+
+func (i *Inventory) Upsert(req dto.RequestUpsertInventory) error {
+	err := validation.ValidateStruct(&req,
+		validation.Field(&req.Quantity,
+			validation.Required,
+			validation.Min(0),
+		),
+	)
+	if err != nil {
+		return apperror.Wrap(err).
+			BadRequest().
+			Build()
+	}
 	return nil
 }

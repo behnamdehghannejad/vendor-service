@@ -3,9 +3,9 @@ package postgres
 import (
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
 	"github.com/behnamdehghannejad/vendorservice/internal/infra/postgres/model"
-	"github.com/behnamdehghannejad/vendorservice/internal/pkg/apperror"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type InventoryRepository struct {
@@ -18,12 +18,24 @@ func NewInventoryRepository(db *gorm.DB) *InventoryRepository {
 	}
 }
 
-func (repo *InventoryRepository) Create(inventory domain.Inventory) error {
-	err := repo.db.Save(toInventoryEntity(inventory)).Error
+func (repo *InventoryRepository) Upsert(inventory domain.Inventory) error {
+	err := repo.db.Clauses(clause.OnConflict{
+		Columns: []clause.Column{
+			{Name: "vendor_id"},
+			{Name: "product_id"},
+		},
+		DoUpdates: clause.AssignmentColumns([]string{
+			"quantity",
+			"updated_at",
+		}),
+	}).Create(&model.InventoryModel{
+		VendorID:  inventory.VendorID,
+		ProductID: inventory.ProductID,
+		Quantity:  inventory.Quantity,
+		Reserved:  0,
+	}).Error
 	if err != nil {
-		return apperror.Wrap(err).
-			UnExpected().
-			Build()
+		return convertPostgresErrorToAppError(err)
 	}
 	return nil
 }

@@ -23,6 +23,10 @@ func (s *InventoryService) FindInventory(vendorID int, productID int) (domain.In
 	return s.repository.GetInventory(vendorID, productID)
 }
 
+func (s *InventoryService) Upsert(inventory domain.Inventory) error {
+	return s.repository.Upsert(inventory)
+}
+
 func (s *InventoryService) ReserveQuantity(vendorID int, productID int, reserved int) error {
 	if err := s.checkEnoughQuantityForReserving(vendorID, productID, reserved); err != nil {
 		return err

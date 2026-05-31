@@ -201,6 +201,7 @@ func registerRoutes(
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	router.GET("/api/v1/inventories/vendors/:vendor_id/products/:product_id", inventoryHandler.GetInventory)
+	router.PUT("/api/v1/inventories/vendors/:vendor_id/products/:product_id", inventoryHandler.Upsert)
 
 	router.POST("/api/v1/vendors", vendorHandler.Create)
 	router.GET("/api/v1/vendors/:id", vendorHandler.GetById)

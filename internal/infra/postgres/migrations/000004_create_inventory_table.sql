@@ -1,8 +1,6 @@
 -- +migrate Up
 
 CREATE TABLE inventories (
-    id BIGSERIAL PRIMARY KEY,
-
     vendor_id INT NOT NULL,
     product_id INT NOT NULL,
 
@@ -12,7 +10,8 @@ CREATE TABLE inventories (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT uq_inventory_vendor_product UNIQUE (vendor_id, product_id),
+    PRIMARY KEY (vendor_id, product_id),
+
     CONSTRAINT chk_inventory_reserved_leq_quantity CHECK (reserved <= quantity),
 
     CONSTRAINT fk_inventories_vendor
@@ -24,7 +23,6 @@ CREATE TABLE inventories (
         ON DELETE CASCADE
 );
 
-CREATE INDEX idx_inventories_vendor_id ON inventories(vendor_id);
 CREATE INDEX idx_inventories_product_id ON inventories(product_id);
 
 -- +migrate Down
