@@ -1,7 +1,8 @@
 package dto
 
-type AddProductsToVendorRequest struct {
-	ProductID int `json:"product_id"`
+type ResponseInventory struct {
+	Reserved  int `json:"reserved"`
 	VendorID  int `json:"vendor_id"`
+	ProductID int `json:"product_id"`
 	Quantity  int `json:"quantity"`
 }

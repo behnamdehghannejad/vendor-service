@@ -130,7 +130,7 @@ func createServer(
 	router.Use(gin.Recovery())
 	router.Use(metrics.PrometheusMiddleware())
 
-	historyHandler, vendorHandler, productHandler := registerHandlers(
+	historyHandler, vendorHandler, productHandler, inventoryHandler := registerHandlers(
 		historyService,
 		inventoryService,
 		vendorService,
@@ -142,6 +142,7 @@ func createServer(
 		historyHandler,
 		vendorHandler,
 		productHandler,
+		inventoryHandler,
 	)
 
 	return &http.Server{
@@ -163,6 +164,7 @@ func registerHandlers(
 	*httphandler.History,
 	*httphandler.Vendor,
 	*httphandler.Product,
+	*httphandler.Inventory,
 ) {
 	historyHandler := httphandler.NewHistoryHandler(
 		historyService,
@@ -178,7 +180,12 @@ func registerHandlers(
 		validator.NewProduct(productService),
 	)
 
-	return historyHandler, vendorHandler, productHandler
+	inventoryHandler := httphandler.NewInventoryHandler(
+		inventoryService,
+		validator.NewInventory(inventoryService),
+	)
+
+	return historyHandler, vendorHandler, productHandler, inventoryHandler
 }
 
 func registerRoutes(
@@ -186,11 +193,14 @@ func registerRoutes(
 	historyHandler *httphandler.History,
 	vendorHandler *httphandler.Vendor,
 	productHandler *httphandler.Product,
+	inventoryHandler *httphandler.Inventory,
 ) {
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{"pong": true})
 	})
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
+	router.GET("/api/v1/inventories/:id", inventoryHandler.GetInventory)
 
 	router.POST("/api/v1/vendors", vendorHandler.Create)
 	router.GET("/api/v1/vendors/:id", vendorHandler.GetById)

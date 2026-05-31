@@ -39,7 +39,16 @@ func (repo *InventoryRepository) IncreaseReserveInventory(vendorID int, productI
 	return nil
 }
 
-func (repo *InventoryRepository) FindInventory(vendorID int, productID int) (domain.Inventory, error) {
+func (repo *InventoryRepository) GetInventory(id int) (domain.Inventory, error) {
+	var inventory model.InventoryModel
+	if err := repo.db.Where("id = ?", id).First(&inventory).Error; err != nil {
+		return domain.Inventory{}, convertPostgresErrorToAppError(err)
+	}
+
+	return toInventoryDomain(inventory), nil
+}
+
+func (repo *InventoryRepository) GetInventoryByVendorAndProduct(vendorID int, productID int) (domain.Inventory, error) {
 	var inventoryEntity model.InventoryModel
 	if err := repo.db.Where("vendor_id = ? AND product_id = ?", vendorID, productID).First(&inventoryEntity).Error; err != nil {
 		return domain.Inventory{}, convertPostgresErrorToAppError(err)

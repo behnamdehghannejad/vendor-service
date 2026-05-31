@@ -19,6 +19,10 @@ func NewInventoryService(repository port.InventoryRepository) *InventoryService 
 	return &InventoryService{repository: repository}
 }
 
+func (s *InventoryService) FindInventory(ID int) (domain.Inventory, error) {
+	return s.repository.GetInventory(ID)
+}
+
 func (s *InventoryService) ReserveQuantity(vendorID int, productID int, reserved int) error {
 	if err := s.checkEnoughQuantityForReserving(vendorID, productID, reserved); err != nil {
 		return err
@@ -60,7 +64,7 @@ func (s *InventoryService) ReserveQuantity(vendorID int, productID int, reserved
 }
 
 func (s *InventoryService) checkEnoughQuantityForReserving(vendorID int, productID int, reserved int) error {
-	inventory, err := s.repository.FindInventory(vendorID, productID)
+	inventory, err := s.repository.GetInventoryByVendorAndProduct(vendorID, productID)
 	if err != nil {
 		return err
 	}
