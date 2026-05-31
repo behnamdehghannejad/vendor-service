@@ -98,7 +98,12 @@ func (i *Inventory) Reserve(c *gin.Context) {
 		return
 	}
 
-	err = i.inventoryService.ReserveQuantity(vendorID, productID, req.Reserve, req.RequestID)
+	err = i.inventoryService.ReserveQuantity(domain.ReserveRequest{
+		VendorID:  vendorID,
+		ProductID: productID,
+		Reserved:  req.Reserve,
+		RequestID: req.RequestID,
+	})
 	if err != nil {
 		errorResponse, status := httperror.Handle(err)
 		c.JSON(status, errorResponse)

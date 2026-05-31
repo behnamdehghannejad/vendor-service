@@ -30,8 +30,12 @@ func (s *InventoryService) Upsert(inventory domain.Inventory) error {
 	return s.repository.Upsert(inventory)
 }
 
-func (s *InventoryService) ReserveQuantity(vendorID int, productID int, reserved int, requestID string) error {
-	if err := s.checkEnoughQuantityForReserving(vendorID, productID, reserved); err != nil {
+func (s *InventoryService) ReserveQuantity(reserveRequest domain.ReserveRequest) error {
+	if err := s.checkEnoughQuantityForReserving(
+		reserveRequest.VendorID,
+		reserveRequest.ProductID,
+		reserveRequest.Reserved,
+	); err != nil {
 		return err
 	}
 
@@ -53,16 +57,20 @@ func (s *InventoryService) ReserveQuantity(vendorID int, productID int, reserved
 		}
 	}()
 
-	err = iwf.IncreaseReserveInventory(vendorID, productID, reserved)
+	err = iwf.IncreaseReserveInventory(
+		reserveRequest.VendorID,
+		reserveRequest.ProductID,
+		reserveRequest.Reserved,
+	)
 	if err != nil {
 		return err
 	}
 
 	err = iwf.CreateHistory(domain.History{
-		ID:        requestID,
-		Reserved:  reserved,
-		VendorID:  vendorID,
-		ProductID: productID,
+		ID:        reserveRequest.RequestID,
+		Reserved:  reserveRequest.Reserved,
+		VendorID:  reserveRequest.VendorID,
+		ProductID: reserveRequest.ProductID,
 		Status:    domain.HISTORY_DRAFT,
 	})
 	if err != nil {
