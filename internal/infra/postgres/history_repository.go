@@ -89,8 +89,6 @@ func (repo *HistoryRepository) toHistoryDomains(historyModels []model.HistoryMod
 
 func (repo *HistoryRepository) toHistoryEntity(domain domain.History) model.HistoryModel {
 	return model.HistoryModel{
-		OrderID:   domain.OrderID,
-		PaymentID: domain.PaymentID,
 		Quantity:  domain.Quantity,
 		ProductID: domain.ProductID,
 		VendorID:  domain.VendorID,
@@ -102,8 +100,6 @@ func (repo *HistoryRepository) toHistoryEntity(domain domain.History) model.Hist
 func (repo *HistoryRepository) toHistoryDomain(history model.HistoryModel) domain.History {
 	return domain.History{
 		ID:        history.ID,
-		OrderID:   history.OrderID,
-		PaymentID: history.PaymentID,
 		Quantity:  history.Quantity,
 		ProductID: history.ProductID,
 		VendorID:  history.VendorID,

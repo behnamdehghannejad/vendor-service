@@ -5,9 +5,7 @@ import (
 )
 
 type History struct {
-	ID        int
-	OrderID   string
-	PaymentID string
+	ID        string
 	Quantity  int
 	ProductID int
 	VendorID  int
@@ -20,10 +18,6 @@ type History struct {
 type HistoryStatus string
 
 const (
-	CREATED   HistoryStatus = "CREATED"
-	RUNNING   HistoryStatus = "RUNNING"
-	PAID      HistoryStatus = "PAID"
-	READY     HistoryStatus = "READY"
-	SENT      HistoryStatus = "SENT"
-	DELIVERED HistoryStatus = "DELIVERED"
+	DRAFTED HistoryStatus = "DRAFTED"
+	SUCCESS HistoryStatus = "SUCCESS"
 )

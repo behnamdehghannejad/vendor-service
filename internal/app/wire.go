@@ -37,7 +37,7 @@ func Run() {
 		return
 	}
 
-	historyService, vendorService, productService, inventoryService, orderService, err := registerServices(cfg.Database)
+	historyService, vendorService, productService, inventoryService, err := registerServices(cfg.Database)
 	if err != nil {
 		return
 	}
@@ -48,7 +48,6 @@ func Run() {
 		vendorService,
 		productService,
 		inventoryService,
-		orderService,
 	)
 
 	stop := make(chan os.Signal, 1)
@@ -74,12 +73,11 @@ func registerServices(cfg postgres.PostgresConfig) (
 	port.VendorService,
 	port.ProductService,
 	port.InventoryService,
-	port.OrderService,
 	error,
 ) {
 	db, err := postgres.New(cfg)
 	if err != nil {
-		return nil, nil, nil, nil, nil, apperror.Wrap(err).UnExpected().DebuggingError().Build()
+		return nil, nil, nil, nil, apperror.Wrap(err).UnExpected().DebuggingError().Build()
 	}
 
 	historyRepository := postgres.NewHistoryRepository(db)
@@ -91,9 +89,8 @@ func registerServices(cfg postgres.PostgresConfig) (
 	vendorService := service.NewVendorService(vendorRepository)
 	productService := service.NewProductService(productRepository)
 	inventoryService := service.NewInventoryService(inventoryRepository)
-	orderService := service.NewOrderService(*inventoryService, *productService, *vendorService, *historyService)
 
-	return historyService, vendorService, productService, inventoryService, orderService, nil
+	return historyService, vendorService, productService, inventoryService, nil
 }
 
 func startServer(server *http.Server, cfg httphandler.HttpConfig) {
@@ -125,7 +122,6 @@ func createServer(
 	vendorService port.VendorService,
 	productService port.ProductService,
 	inventoryService port.InventoryService,
-	orderService port.OrderService,
 ) *http.Server {
 	gin.SetMode(gin.ReleaseMode)
 
@@ -134,10 +130,9 @@ func createServer(
 	router.Use(gin.Recovery())
 	router.Use(metrics.PrometheusMiddleware())
 
-	historyHandler, vendorHandler, productHandler, _, _ := registerHandlers(
+	historyHandler, vendorHandler, productHandler, _ := registerHandlers(
 		historyService,
 		inventoryService,
-		orderService,
 		vendorService,
 		productService,
 	)
@@ -162,7 +157,6 @@ func createServer(
 func registerHandlers(
 	historyService port.HistoryService,
 	inventoryService port.InventoryService,
-	orderService port.OrderService,
 	vendorService port.VendorService,
 	productService port.ProductService,
 ) (
@@ -170,7 +164,6 @@ func registerHandlers(
 	*httphandler.Vendor,
 	*httphandler.Product,
 	*httphandler.Inventory,
-	*httphandler.Order,
 ) {
 	historyHandler := httphandler.NewHistoryHandler(
 		historyService,
@@ -191,11 +184,7 @@ func registerHandlers(
 		validator.NewInventory(inventoryService),
 	)
 
-	orderHandler := httphandler.NewOrderHandler(
-		orderService,
-		validator.NewOrder(orderService),
-	)
-	return historyHandler, vendorHandler, productHandler, inventoryHandler, orderHandler
+	return historyHandler, vendorHandler, productHandler, inventoryHandler
 }
 
 func registerRoutes(

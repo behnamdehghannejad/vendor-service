@@ -1,6 +1,6 @@
 -- +migrate Up
 CREATE TABLE histories (
-    id BIGSERIAL PRIMARY KEY,
+    id VARCHAR(36) PRIMARY KEY,
 
     order_id VARCHAR(100) NOT NULL,
     payment_id VARCHAR(100) NOT NULL,
@@ -16,7 +16,6 @@ CREATE TABLE histories (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
 
 -- +migrate Down
 DROP TABLE IF EXISTS histories;

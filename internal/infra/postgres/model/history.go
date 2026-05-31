@@ -7,7 +7,7 @@ import (
 )
 
 type HistoryModel struct {
-	ID        int                  `gorm:"primary_key"`
+	ID        string               `gorm:"primary_key"`
 	OrderID   string               `gorm:"column:order_id"`
 	PaymentID string               `gorm:"column:payment_id"`
 	Quantity  int                  `gorm:"column:quantity"`
