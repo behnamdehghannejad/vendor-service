@@ -5,7 +5,7 @@ import (
 )
 
 type InventoryRepository interface {
-	Add(inventory domain.Inventory) error
-	FindByVendorIDAndProductID(vendorID int, productID int) (domain.Inventory, error)
-	Update(inventory domain.Inventory) error
+	Create(domain.Inventory) error
+	FindByVendorIDAndProductID(int, int) (domain.Inventory, error)
+	Update(domain.Inventory) error
 }

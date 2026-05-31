@@ -17,7 +17,7 @@ func NewInventoryRepository(db *gorm.DB) *InventoryRepository {
 	}
 }
 
-func (repo *InventoryRepository) Add(inventory domain.Inventory) error {
+func (repo *InventoryRepository) Create(inventory domain.Inventory) error {
 	return repo.db.Save(toInventoryEntity(inventory)).Error
 }
 

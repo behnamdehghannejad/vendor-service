@@ -17,7 +17,7 @@ func (s *InventoryService) AddProductsToVendor(inventory domain.Inventory) error
 	loadedInventory, err := s.FindByVendorIDAndProductID(inventory.VendorID, inventory.ProductID)
 	if err != nil {
 		inventory.Reserved = 0
-		if err := s.repository.Add(inventory); err != nil {
+		if err := s.repository.Create(inventory); err != nil {
 			return err
 		}
 	}
