@@ -45,11 +45,7 @@ func (s *InventoryService) Upsert(inventoryRequest domain.Inventory) error {
 }
 
 func (s *InventoryService) ReserveQuantity(reserveRequest domain.ReserveRequest) error {
-	if err := s.checkEnoughQuantityForReserving(
-		reserveRequest.VendorID,
-		reserveRequest.ProductID,
-		reserveRequest.Reserved,
-	); err != nil {
+	if err := s.checkEnoughQuantityForReserving(reserveRequest); err != nil {
 		return err
 	}
 
@@ -94,13 +90,13 @@ func (s *InventoryService) ReserveQuantity(reserveRequest domain.ReserveRequest)
 	return iwf.Commit()
 }
 
-func (s *InventoryService) checkEnoughQuantityForReserving(vendorID int, productID int, reserved int) error {
-	inventory, err := s.repository.GetInventory(vendorID, productID)
+func (s *InventoryService) checkEnoughQuantityForReserving(reserveRequest domain.ReserveRequest) error {
+	inventory, err := s.repository.GetInventory(reserveRequest.VendorID, reserveRequest.ProductID)
 	if err != nil {
 		return err
 	}
 
-	if inventory.Reserved+reserved > inventory.Quantity {
+	if inventory.Reserved+reserveRequest.Reserved > inventory.Quantity {
 		return apperror.WithoutParentError().
 			BadRequest().
 			Warningf("the quantity isn't adequate").
