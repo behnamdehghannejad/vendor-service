@@ -17,8 +17,18 @@ func NewInventory(inventory port.InventoryService) *Inventory {
 	}
 }
 
-func (i *Inventory) ValidateIDs(ID string) error {
-	err := validation.Validate(ID,
+func (i *Inventory) ValidateIDs(vendorID string, productID string) error {
+	err := validation.Validate(vendorID,
+		validation.Required,
+		is.Digit,
+	)
+	if err != nil {
+		return apperror.Wrap(err).
+			BadRequest().
+			Build()
+	}
+
+	err = validation.Validate(productID,
 		validation.Required,
 		is.Digit,
 	)

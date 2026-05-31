@@ -16,7 +16,7 @@ type Inventory struct {
 	validator        *validator.Inventory
 }
 
-func NewInventoryHandler(inventoryService port.InventoryService, validator *validator.Inventory) *Inventory {
+func NewInventory(inventoryService port.InventoryService, validator *validator.Inventory) *Inventory {
 	return &Inventory{
 		inventoryService: inventoryService,
 		validator:        validator,
@@ -24,14 +24,14 @@ func NewInventoryHandler(inventoryService port.InventoryService, validator *vali
 }
 
 func (i *Inventory) GetInventory(c *gin.Context) {
-	ID, err := i.getIDs(c)
+	vendorID, productID, err := i.GetIDs(c)
 	if err != nil {
 		errorResponse, status := httperror.Handle(err)
 		c.JSON(status, errorResponse)
 		return
 	}
 
-	inventory, err := i.inventoryService.FindInventory(ID)
+	inventory, err := i.inventoryService.FindInventory(vendorID, productID)
 	if err != nil {
 		errorResponse, status := httperror.Handle(err)
 		c.JSON(status, errorResponse)
@@ -46,15 +46,17 @@ func (i *Inventory) GetInventory(c *gin.Context) {
 	})
 }
 
-func (i *Inventory) getIDs(c *gin.Context) (int, error) {
-	IDStr := c.Param("id")
+func (i *Inventory) GetIDs(c *gin.Context) (int, int, error) {
+	vendorIDStr := c.Param("vendor_id")
+	productIDStr := c.Param("product_id")
 
-	err := i.validator.ValidateIDs(IDStr)
+	err := i.validator.ValidateIDs(vendorIDStr, productIDStr)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
-	vendorID, _ := strconv.Atoi(IDStr)
+	vendorID, _ := strconv.Atoi(vendorIDStr)
+	productID, _ := strconv.Atoi(productIDStr)
 
-	return vendorID, nil
+	return vendorID, productID, nil
 }

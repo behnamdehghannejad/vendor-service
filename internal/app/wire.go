@@ -180,7 +180,7 @@ func registerHandlers(
 		validator.NewProduct(productService),
 	)
 
-	inventoryHandler := httphandler.NewInventoryHandler(
+	inventoryHandler := httphandler.NewInventory(
 		inventoryService,
 		validator.NewInventory(inventoryService),
 	)
@@ -200,7 +200,7 @@ func registerRoutes(
 	})
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
-	router.GET("/api/v1/inventories/:id", inventoryHandler.GetInventory)
+	router.GET("/api/v1/inventories/vendors/:vendor_id/products/:product_id", inventoryHandler.GetInventory)
 
 	router.POST("/api/v1/vendors", vendorHandler.Create)
 	router.GET("/api/v1/vendors/:id", vendorHandler.GetById)
