@@ -19,7 +19,7 @@ func NewInventoryRepository(db *gorm.DB) *InventoryRepository {
 }
 
 func (repo *InventoryRepository) Upsert(inventory domain.Inventory) error {
-	inventoryModel := repo.toInventoryEntity(inventory)
+	inventoryModel := repo.toInventoryModel(inventory)
 	err := repo.db.Clauses(clause.OnConflict{
 		Columns: []clause.Column{
 			{Name: "vendor_id"},
@@ -56,28 +56,28 @@ func (repo *InventoryRepository) IncreaseReserveInventory(requestReserve domain.
 }
 
 func (repo *InventoryRepository) GetInventory(vendorID int, productID int) (domain.Inventory, error) {
-	var inventoryEntity model.InventoryModel
-	if err := repo.db.Where("vendor_id = ? AND product_id = ?", vendorID, productID).First(&inventoryEntity).Error; err != nil {
+	var inventoryModel model.InventoryModel
+	if err := repo.db.Where("vendor_id = ? AND product_id = ?", vendorID, productID).First(&inventoryModel).Error; err != nil {
 		return domain.Inventory{}, convertPostgresErrorToAppError(err)
 	}
 
-	return repo.toInventoryDomain(inventoryEntity), nil
+	return repo.toInventoryDomain(inventoryModel), nil
 }
 
 func (repo *InventoryRepository) GetInventoryByVendorAndProduct(vendorID int, productID int) (domain.Inventory, error) {
-	var inventoryEntity model.InventoryModel
-	if err := repo.db.Where("vendor_id = ? AND product_id = ?", vendorID, productID).First(&inventoryEntity).Error; err != nil {
+	var inventoryModel model.InventoryModel
+	if err := repo.db.Where("vendor_id = ? AND product_id = ?", vendorID, productID).First(&inventoryModel).Error; err != nil {
 		return domain.Inventory{}, convertPostgresErrorToAppError(err)
 	}
 
-	return repo.toInventoryDomain(inventoryEntity), nil
+	return repo.toInventoryDomain(inventoryModel), nil
 }
 
 func (repo *InventoryRepository) Update(inventory domain.Inventory) error {
-	return repo.db.Save(repo.toInventoryEntity(inventory)).Error
+	return repo.db.Save(repo.toInventoryModel(inventory)).Error
 }
 
-func (repo *InventoryRepository) toInventoryEntity(inventory domain.Inventory) model.InventoryModel {
+func (repo *InventoryRepository) toInventoryModel(inventory domain.Inventory) model.InventoryModel {
 	return model.InventoryModel{
 		ProductID: inventory.ProductID,
 		VendorID:  inventory.VendorID,

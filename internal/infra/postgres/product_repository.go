@@ -19,7 +19,7 @@ func NewProductRepository(db *gorm.DB) *ProductRepository {
 }
 
 func (repo *ProductRepository) Add(product domain.Product) error {
-	entity := repo.toProductEntity(product)
+	entity := repo.toProductModel(product)
 
 	if err := repo.db.Create(entity).Error; err != nil {
 		return convertPostgresErrorToAppError(err, product)
@@ -29,7 +29,7 @@ func (repo *ProductRepository) Add(product domain.Product) error {
 }
 
 func (repo *ProductRepository) Update(product domain.Product) error {
-	entity := repo.toProductEntity(product)
+	entity := repo.toProductModel(product)
 
 	if err := repo.db.Save(entity).Error; err != nil {
 		return convertPostgresErrorToAppError(err, product)
@@ -80,7 +80,7 @@ func (repo *ProductRepository) FindById(id int) (domain.Product, error) {
 	return repo.toProductDomain(entity), nil
 }
 
-func (repo *ProductRepository) toProductEntity(product domain.Product) *model.ProductModel {
+func (repo *ProductRepository) toProductModel(product domain.Product) *model.ProductModel {
 	return &model.ProductModel{
 		ID:          product.ID,
 		Name:        product.Name,

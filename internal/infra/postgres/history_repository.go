@@ -18,7 +18,7 @@ func NewHistoryRepository(db *gorm.DB) *HistoryRepository {
 }
 
 func (repo *HistoryRepository) Create(history domain.History) error {
-	historyModel := repo.toHistoryEntity(history)
+	historyModel := repo.toHistoryModel(history)
 	if err := repo.db.Create(&historyModel).Error; err != nil {
 		return convertPostgresErrorToAppError(err)
 	}
@@ -26,7 +26,7 @@ func (repo *HistoryRepository) Create(history domain.History) error {
 }
 
 func (repo *HistoryRepository) Update(history domain.History) error {
-	if err := repo.db.Save(repo.toHistoryEntity(history)).Error; err != nil {
+	if err := repo.db.Save(repo.toHistoryModel(history)).Error; err != nil {
 		return convertPostgresErrorToAppError(err)
 	}
 	return nil
@@ -86,7 +86,7 @@ func (repo *HistoryRepository) toHistoryDomains(historyModels []model.HistoryMod
 	return histories
 }
 
-func (repo *HistoryRepository) toHistoryEntity(domain domain.History) model.HistoryModel {
+func (repo *HistoryRepository) toHistoryModel(domain domain.History) model.HistoryModel {
 	return model.HistoryModel{
 		ID:        domain.ID,
 		Reserved:  domain.Reserved,
