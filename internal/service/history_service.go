@@ -57,7 +57,11 @@ func (s *HistoryService) Approve(ID string) error {
 		Reserve:   history.Reserved,
 	})
 
-	return auw.Commit()
+	err = auw.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *HistoryService) Reject(ID string) error {
@@ -91,5 +95,9 @@ func (s *HistoryService) Reject(ID string) error {
 		Reserve:   history.Reserved,
 	})
 
-	return auw.Commit()
+	err = auw.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
 }

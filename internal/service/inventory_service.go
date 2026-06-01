@@ -102,5 +102,9 @@ func (s *InventoryService) ReserveQuantity(reserveRequest domain.ReserveRequest)
 		return err
 	}
 
-	return iwf.Commit()
+	err = iwf.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
 }
