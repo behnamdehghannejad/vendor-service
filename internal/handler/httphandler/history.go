@@ -31,8 +31,6 @@ func (h *History) Search(c *gin.Context) {
 
 	histories, err := h.service.Search(domain.SearchHistory{
 		Activation: h.GetIsActiveFromQuery(q.Activation),
-		PaymentID:  q.PaymentID,
-		OrderID:    q.OrderID,
 		VendorID:   q.VendorID,
 		ProductID:  q.ProductID,
 		Status:     q.Status,
@@ -62,13 +60,10 @@ func (*History) GetIsActiveFromQuery(activeStr string) *bool {
 
 func (h *History) serializeHistory(history domain.History) dto.HistoryResponse {
 	return dto.HistoryResponse{
-		OrderID:   history.OrderID,
-		PaymentID: history.PaymentID,
-		Quantity:  history.Quantity,
+		Reserved:  history.Reserved,
 		ProductID: history.ProductID,
 		VendorID:  history.VendorID,
 		Status:    string(history.Status),
-		Active:    history.Active,
 		CreatedAt: history.CreatedAt,
 		UpdatedAt: history.UpdatedAt,
 	}

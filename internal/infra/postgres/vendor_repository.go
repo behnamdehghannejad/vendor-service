@@ -19,8 +19,8 @@ func NewVendorRepository(db *gorm.DB) *VendorRepository {
 	}
 }
 
-func (repo *VendorRepository) Add(v domain.Vendor) error {
-	entity := repo.toVendorEntity(v)
+func (repo *VendorRepository) Create(v domain.Vendor) error {
+	entity := repo.toVendorModel(v)
 
 	if err := repo.db.Create(&entity).Error; err != nil {
 		return convertPostgresErrorToAppError(err, v)
@@ -30,7 +30,7 @@ func (repo *VendorRepository) Add(v domain.Vendor) error {
 }
 
 func (repo *VendorRepository) Update(v domain.Vendor) error {
-	entity := repo.toVendorEntity(v)
+	entity := repo.toVendorModel(v)
 
 	if err := repo.db.Save(&entity).Error; err != nil {
 		return convertPostgresErrorToAppError(err, v)
@@ -86,7 +86,7 @@ func (repo *VendorRepository) FindByID(id int) (domain.Vendor, error) {
 	return repo.toVendorDomain(entity), nil
 }
 
-func (repo *VendorRepository) toVendorEntity(vendor domain.Vendor) model.VendorModel {
+func (repo *VendorRepository) toVendorModel(vendor domain.Vendor) model.VendorModel {
 	return model.VendorModel{
 		ID:        vendor.ID,
 		Name:      vendor.Name,

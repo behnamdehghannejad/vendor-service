@@ -1,10 +1,9 @@
 package postgres
 
 import (
-	"time"
-
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
 	"github.com/behnamdehghannejad/vendorservice/internal/infra/postgres/model"
+	"github.com/behnamdehghannejad/vendorservice/internal/pkg/apperror"
 
 	"gorm.io/gorm"
 )
@@ -19,27 +18,28 @@ func NewHistoryRepository(db *gorm.DB) *HistoryRepository {
 	}
 }
 
-func (repo *HistoryRepository) Add(history domain.History) error {
-	if err := repo.db.Create(repo.toHistoryEntity(history)).Error; err != nil {
+func (repo *HistoryRepository) Create(history domain.History) error {
+	historyModel := repo.toHistoryModel(history)
+	if err := repo.db.Create(&historyModel).Error; err != nil {
 		return convertPostgresErrorToAppError(err)
 	}
 	return nil
 }
 
 func (repo *HistoryRepository) Update(history domain.History) error {
-	if err := repo.db.Save(repo.toHistoryEntity(history)).Error; err != nil {
+	if err := repo.db.Save(repo.toHistoryModel(history)).Error; err != nil {
 		return convertPostgresErrorToAppError(err)
 	}
 	return nil
 }
 
-func (repo *HistoryRepository) FindByOrderID(id string) (domain.History, error) {
-	var history model.HistoryModel
-	if err := repo.db.Where("order_id = ?", id).First(&history).Error; err != nil {
+func (repo *HistoryRepository) GetByID(ID string) (domain.History, error) {
+	var historyModel model.HistoryModel
+	if err := repo.db.Where("id = ?", ID).First(&historyModel).Error; err != nil {
 		return domain.History{}, convertPostgresErrorToAppError(err)
 	}
-	domainHistory := repo.toHistoryDomain(history)
-	return domainHistory, nil
+
+	return repo.toHistoryDomain(historyModel), nil
 }
 
 func (repo *HistoryRepository) Filter(filter domain.SearchHistory) ([]domain.History, error) {
@@ -79,36 +79,62 @@ func (repo *HistoryRepository) Filter(filter domain.SearchHistory) ([]domain.His
 	return repo.toHistoryDomains(histories), err
 }
 
+func (repo *HistoryRepository) Approve(ID string) error {
+	err := repo.db.Model(&model.HistoryModel{}).
+		Where("id = ?", ID).
+		Updates(map[string]interface{}{
+			"status":     domain.HISTORY_SUCCESS,
+			"updated_at": gorm.Expr("CURRENT_TIMESTAMP"),
+		}).Error
+	if err != nil {
+		return apperror.Wrap(err).
+			UnExpected().
+			Log().
+			Build()
+	}
+	return nil
+}
+
+func (repo *HistoryRepository) Reject(ID string) error {
+	err := repo.db.Model(&model.HistoryModel{}).
+		Where("id = ?", ID).
+		Updates(map[string]interface{}{
+			"status":     domain.HISTORY_FAIL,
+			"updated_at": gorm.Expr("CURRENT_TIMESTAMP"),
+		}).Error
+	if err != nil {
+		return apperror.Wrap(err).
+			UnExpected().
+			Log().
+			Build()
+	}
+	return nil
+}
+
 func (repo *HistoryRepository) toHistoryDomains(historyModels []model.HistoryModel) []domain.History {
 	histories := make([]domain.History, 0, len(historyModels))
-	for _, history := range histories {
-		histories = append(histories, history)
+	for _, historyModel := range historyModels {
+		histories = append(histories, repo.toHistoryDomain(historyModel))
 	}
 	return histories
 }
 
-func (repo *HistoryRepository) toHistoryEntity(domain domain.History) model.HistoryModel {
+func (repo *HistoryRepository) toHistoryModel(domain domain.History) model.HistoryModel {
 	return model.HistoryModel{
-		OrderID:   domain.OrderID,
-		PaymentID: domain.PaymentID,
-		Quantity:  domain.Quantity,
+		ID:        domain.ID,
+		Reserved:  domain.Reserved,
 		ProductID: domain.ProductID,
 		VendorID:  domain.VendorID,
-		Active:    domain.Active,
-		CreatedAt: time.Now(),
 	}
 }
 
 func (repo *HistoryRepository) toHistoryDomain(history model.HistoryModel) domain.History {
 	return domain.History{
 		ID:        history.ID,
-		OrderID:   history.OrderID,
-		PaymentID: history.PaymentID,
-		Quantity:  history.Quantity,
+		Reserved:  history.Reserved,
 		ProductID: history.ProductID,
 		VendorID:  history.VendorID,
 		Status:    history.Status,
-		Active:    history.Active,
 		CreatedAt: history.CreatedAt,
 		UpdatedAt: history.UpdatedAt,
 	}

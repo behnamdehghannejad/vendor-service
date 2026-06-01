@@ -5,14 +5,11 @@ import (
 )
 
 type History struct {
-	ID        int
-	OrderID   string
-	PaymentID string
-	Quantity  int
+	ID        string
+	Reserved  int
 	ProductID int
 	VendorID  int
 	Status    HistoryStatus
-	Active    bool
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -20,10 +17,7 @@ type History struct {
 type HistoryStatus string
 
 const (
-	CREATED   HistoryStatus = "CREATED"
-	RUNNING   HistoryStatus = "RUNNING"
-	PAID      HistoryStatus = "PAID"
-	READY     HistoryStatus = "READY"
-	SENT      HistoryStatus = "SENT"
-	DELIVERED HistoryStatus = "DELIVERED"
+	HISTORY_DRAFT   HistoryStatus = "DRAFTED"
+	HISTORY_SUCCESS HistoryStatus = "SUCCESS"
+	HISTORY_FAIL    HistoryStatus = "FAIL"
 )

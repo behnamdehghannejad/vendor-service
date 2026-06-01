@@ -30,6 +30,16 @@ func Wrap(err error) *BuilderError {
 	}
 }
 
+func WithoutParentError() *BuilderError {
+	return &BuilderError{
+		isPrinted: true,
+		args:      []any{},
+		pattern:   "",
+		err:       nil,
+		input:     []any{},
+	}
+}
+
 func (m *BuilderError) getErrorType() ErrorType {
 	if m.errorType != 0 {
 		return m.errorType

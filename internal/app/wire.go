@@ -37,19 +37,31 @@ func Run() {
 		return
 	}
 
-	historyService, vendorService, productService, inventoryService, orderService, err := registerServices(cfg.Database)
+	historyService, vendorService, productService, inventoryService, err := registerServices(cfg.Database)
 	if err != nil {
 		return
 	}
 
-	server := createServer(cfg.App, historyService, vendorService, productService, inventoryService, orderService)
+	server := createServer(
+		cfg.App,
+		historyService,
+		vendorService,
+		productService,
+		inventoryService,
+	)
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
+	errCh := make(chan error, 1)
 
-	go startServer(server, cfg.App)
+	go startServer(server, cfg.App, errCh)
 
-	<-stop
+	select {
+	case <-stop:
+		shutdownServer(server)
+	case err := <-errCh:
+		log.Fatalf("server failed %v", err)
+	}
 
 	shutdownServer(server)
 }
@@ -67,12 +79,11 @@ func registerServices(cfg postgres.PostgresConfig) (
 	port.VendorService,
 	port.ProductService,
 	port.InventoryService,
-	port.OrderService,
 	error,
 ) {
 	db, err := postgres.New(cfg)
 	if err != nil {
-		return nil, nil, nil, nil, nil, apperror.Wrap(err).UnExpected().DebuggingError().Build()
+		return nil, nil, nil, nil, apperror.Wrap(err).UnExpected().DebuggingError().Build()
 	}
 
 	historyRepository := postgres.NewHistoryRepository(db)
@@ -80,21 +91,23 @@ func registerServices(cfg postgres.PostgresConfig) (
 	productRepository := postgres.NewProductRepository(db)
 	inventoryRepository := postgres.NewInventoryRepository(db)
 
+	unitOfWorkFactory := postgres.NewUnitOfWorkFactory(db)
+
 	historyService := service.NewHistoryService(historyRepository)
 	vendorService := service.NewVendorService(vendorRepository)
 	productService := service.NewProductService(productRepository)
-	inventoryService := service.NewInventoryService(inventoryRepository)
-	orderService := service.NewOrderService(*inventoryService, *productService, *vendorService, *historyService)
+	inventoryService := service.NewInventoryService(inventoryRepository, unitOfWorkFactory)
 
-	return historyService, vendorService, productService, inventoryService, orderService, nil
+	return historyService, vendorService, productService, inventoryService, nil
 }
 
-func startServer(server *http.Server, cfg httphandler.HttpConfig) {
+func startServer(server *http.Server, cfg httphandler.HttpConfig, errCh chan<- error) {
 	log.Infof("server started on %s", getAddress(cfg.Host, cfg.Port))
 
 	err := server.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
 		log.Warningf("server error: %s", err.Error())
+		errCh <- err
 	}
 }
 
@@ -118,7 +131,6 @@ func createServer(
 	vendorService port.VendorService,
 	productService port.ProductService,
 	inventoryService port.InventoryService,
-	orderService port.OrderService,
 ) *http.Server {
 	gin.SetMode(gin.ReleaseMode)
 
@@ -127,10 +139,9 @@ func createServer(
 	router.Use(gin.Recovery())
 	router.Use(metrics.PrometheusMiddleware())
 
-	historyHandler, vendorHandler, productHandler, _, _ := registerHandlers(
+	historyHandler, vendorHandler, productHandler, inventoryHandler := registerHandlers(
 		historyService,
 		inventoryService,
-		orderService,
 		vendorService,
 		productService,
 	)
@@ -140,9 +151,8 @@ func createServer(
 		historyHandler,
 		vendorHandler,
 		productHandler,
+		inventoryHandler,
 	)
-
-	registerMetrics(router)
 
 	return &http.Server{
 		Addr:              getAddress(cfg.Host, cfg.Port),
@@ -157,7 +167,6 @@ func createServer(
 func registerHandlers(
 	historyService port.HistoryService,
 	inventoryService port.InventoryService,
-	orderService port.OrderService,
 	vendorService port.VendorService,
 	productService port.ProductService,
 ) (
@@ -165,7 +174,6 @@ func registerHandlers(
 	*httphandler.Vendor,
 	*httphandler.Product,
 	*httphandler.Inventory,
-	*httphandler.Order,
 ) {
 	historyHandler := httphandler.NewHistoryHandler(
 		historyService,
@@ -181,16 +189,12 @@ func registerHandlers(
 		validator.NewProduct(productService),
 	)
 
-	inventoryHandler := httphandler.NewInventoryHandler(
+	inventoryHandler := httphandler.NewInventory(
 		inventoryService,
 		validator.NewInventory(inventoryService),
 	)
 
-	orderHandler := httphandler.NewOrderHandler(
-		orderService,
-		validator.NewOrder(orderService),
-	)
-	return historyHandler, vendorHandler, productHandler, inventoryHandler, orderHandler
+	return historyHandler, vendorHandler, productHandler, inventoryHandler
 }
 
 func registerRoutes(
@@ -198,7 +202,27 @@ func registerRoutes(
 	historyHandler *httphandler.History,
 	vendorHandler *httphandler.Vendor,
 	productHandler *httphandler.Product,
+	inventoryHandler *httphandler.Inventory,
 ) {
+	router.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{"pong": true})
+	})
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
+	router.GET("/api/v1/inventories", inventoryHandler.Search)
+	router.GET(
+		"/api/v1/inventories/:vpIDs",
+		inventoryHandler.GetInventory,
+	)
+	router.PUT(
+		"/api/v1/inventories/:vpIDs",
+		inventoryHandler.Upsert,
+	)
+	router.POST(
+		"/api/v1/inventories/:vpIDs/reserve",
+		inventoryHandler.Reserve,
+	)
+
 	router.POST("/api/v1/vendors", vendorHandler.Create)
 	router.GET("/api/v1/vendors/:id", vendorHandler.GetById)
 	router.DELETE("/api/v1/vendors/:id", vendorHandler.Delete)
@@ -210,14 +234,6 @@ func registerRoutes(
 	router.PATCH("api/v1/products/:id", productHandler.Update)
 
 	router.GET("/api/v1/histories", historyHandler.Search)
-}
-
-func registerMetrics(router *gin.Engine) {
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{"pong": true})
-	})
-
-	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 }
 
 func getAddress(host string, port string) string {

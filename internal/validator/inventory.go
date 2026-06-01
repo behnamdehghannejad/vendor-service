@@ -18,31 +18,41 @@ func NewInventory(inventory port.InventoryService) *Inventory {
 	}
 }
 
-func (i *Inventory) ValidateID(idStr string) error {
-	err := validation.Validate(
-		idStr,
+func (i *Inventory) ValidateIDs(vendorID string, productID string) error {
+	err := validation.Validate(vendorID,
 		validation.Required,
 		is.Digit,
 	)
 	if err != nil {
-		return apperror.
-			Wrap(err).
+		return apperror.Wrap(err).
 			BadRequest().
-			Log().
 			Build()
 	}
+
+	err = validation.Validate(productID,
+		validation.Required,
+		is.Digit,
+	)
+	if err != nil {
+		return apperror.Wrap(err).
+			BadRequest().
+			Build()
+	}
+
 	return nil
 }
 
-func (i *Inventory) AddProductsToVendor(r dto.AddProductsToVendorRequest) error {
-	err := validation.ValidateStruct(&r)
+func (i *Inventory) Upsert(req dto.RequestUpsertInventory) error {
+	err := validation.ValidateStruct(&req,
+		validation.Field(&req.Quantity,
+			validation.Required,
+			validation.Min(0),
+		),
+	)
 	if err != nil {
-		return apperror.
-			Wrap(err).
+		return apperror.Wrap(err).
 			BadRequest().
-			Log().
 			Build()
 	}
-
 	return nil
 }

@@ -1,9 +1,8 @@
 package domain
 
-type Inventory struct {
+type ReserveRequest struct {
 	VendorID  int
 	ProductID int
-	Quantity  int
 	Reserved  int
-	V         int
+	RequestID string
 }

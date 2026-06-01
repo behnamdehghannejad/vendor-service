@@ -14,7 +14,7 @@ func NewVendorService(repository port.VendorRepository) *VendorService {
 }
 
 func (s *VendorService) Create(vendor domain.Vendor) error {
-	return s.repository.Add(vendor)
+	return s.repository.Create(vendor)
 }
 
 func (s *VendorService) Update(vendor domain.Vendor) error {

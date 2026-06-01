@@ -3,7 +3,7 @@ package port
 import "github.com/behnamdehghannejad/vendorservice/internal/domain"
 
 type VendorRepository interface {
-	Add(domain.Vendor) error
+	Create(domain.Vendor) error
 	Update(domain.Vendor) error
 	Delete(int) error
 	Filter(domain.SearchVendor) ([]domain.Vendor, error)
