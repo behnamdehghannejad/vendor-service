@@ -9,39 +9,39 @@ import (
 	"gorm.io/gorm"
 )
 
-type InventoryUnitOfWork struct {
+type ReserveInventoryUnitOfWork struct {
 	tx *gorm.DB
 
 	inventoryRepo *InventoryRepository
 	historyRepo   *HistoryRepository
 }
 
-func NewInventoryUnitOfWork(
+func NewReserveInventoryUnitOfWork(
 	db *gorm.DB,
 	ctx context.Context,
-) (*InventoryUnitOfWork, error) {
+) (*ReserveInventoryUnitOfWork, error) {
 	tx := db.WithContext(ctx).Begin()
 	if tx.Error != nil {
 		return nil, apperror.Wrap(tx.Error).
 			UnExpected().
 			Build()
 	}
-	return &InventoryUnitOfWork{
+	return &ReserveInventoryUnitOfWork{
 		tx:            tx,
 		inventoryRepo: NewInventoryRepository(tx),
 		historyRepo:   NewHistoryRepository(tx),
 	}, nil
 }
 
-func (iuw *InventoryUnitOfWork) IncreaseReserveInventory(requestReserve domain.RequestReserve) error {
+func (iuw *ReserveInventoryUnitOfWork) IncreaseReserveInventory(requestReserve domain.RequestReserve) error {
 	return iuw.inventoryRepo.IncreaseReserveInventory(requestReserve)
 }
 
-func (iuw *InventoryUnitOfWork) CreateHistory(history domain.History) error {
+func (iuw *ReserveInventoryUnitOfWork) CreateHistory(history domain.History) error {
 	return iuw.historyRepo.Create(history)
 }
 
-func (iuw *InventoryUnitOfWork) Commit() error {
+func (iuw *ReserveInventoryUnitOfWork) Commit() error {
 	if iuw.tx == nil {
 		return apperror.Wrap(errors.New("transaction has not been started")).
 			UnExpected().
@@ -55,7 +55,7 @@ func (iuw *InventoryUnitOfWork) Commit() error {
 	return nil
 }
 
-func (iuw *InventoryUnitOfWork) Rollback() error {
+func (iuw *ReserveInventoryUnitOfWork) Rollback() error {
 	if iuw.tx == nil {
 		return apperror.Wrap(errors.New("transaction has not been started")).
 			UnExpected().

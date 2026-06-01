@@ -22,5 +22,5 @@ func NewUnitOfWorkFactory(db *gorm.DB) *UnitOfWordFactory {
 }
 
 func (uof *UnitOfWordFactory) CreateInventoryUnitOfWork(ctx context.Context) (port.InventoryUnitOfWork, error) {
-	return NewInventoryUnitOfWork(uof.db, ctx)
+	return NewReserveInventoryUnitOfWork(uof.db, ctx)
 }
