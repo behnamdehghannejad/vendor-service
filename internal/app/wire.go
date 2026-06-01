@@ -52,10 +52,16 @@ func Run() {
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
+	errCh := make(chan error, 1)
 
-	go startServer(server, cfg.App)
+	go startServer(server, cfg.App, errCh)
 
-	<-stop
+	select {
+	case <-stop:
+		shutdownServer(server)
+	case err := <-errCh:
+		log.Fatalf("server failed %v", err)
+	}
 
 	shutdownServer(server)
 }
@@ -95,12 +101,13 @@ func registerServices(cfg postgres.PostgresConfig) (
 	return historyService, vendorService, productService, inventoryService, nil
 }
 
-func startServer(server *http.Server, cfg httphandler.HttpConfig) {
+func startServer(server *http.Server, cfg httphandler.HttpConfig, errCh chan<- error) {
 	log.Infof("server started on %s", getAddress(cfg.Host, cfg.Port))
 
 	err := server.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
 		log.Warningf("server error: %s", err.Error())
+		errCh <- err
 	}
 }
 
