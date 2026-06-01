@@ -1,6 +1,6 @@
 package model
 
-type InventoryEntity struct {
+type InventoryModel struct {
 	ID        int `gorm:"primary_key"`
 	VendorID  int `gorm:"column:vendor_id"`
 	ProductID int `gorm:"column:product_id"`
@@ -8,6 +8,6 @@ type InventoryEntity struct {
 	Reserved  int `gorm:"column:reserved"`
 }
 
-func (InventoryEntity) TableName() string {
-	return "inventory"
+func (InventoryModel) TableName() string {
+	return "inventories"
 }

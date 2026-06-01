@@ -22,7 +22,7 @@ func (repo *InventoryRepository) Add(inventory domain.Inventory) error {
 }
 
 func (repo *InventoryRepository) FindByVendorIDAndProductID(vendorID int, productID int) (domain.Inventory, error) {
-	var inventoryEntity model.InventoryEntity
+	var inventoryEntity model.InventoryModel
 	if err := repo.db.Where("vendor_id = ? AND product_id = ?", vendorID, productID).First(&inventoryEntity).Error; err != nil {
 		return domain.Inventory{}, err
 	}
@@ -34,8 +34,8 @@ func (repo *InventoryRepository) Update(inventory domain.Inventory) error {
 	return repo.db.Save(toInventoryEntity(inventory)).Error
 }
 
-func toInventoryEntity(inventory domain.Inventory) model.InventoryEntity {
-	return model.InventoryEntity{
+func toInventoryEntity(inventory domain.Inventory) model.InventoryModel {
+	return model.InventoryModel{
 		ID:        inventory.ID,
 		ProductID: inventory.ProductID,
 		VendorID:  inventory.VendorID,
@@ -44,7 +44,7 @@ func toInventoryEntity(inventory domain.Inventory) model.InventoryEntity {
 	}
 }
 
-func toInventoryDomain(entity model.InventoryEntity) domain.Inventory {
+func toInventoryDomain(entity model.InventoryModel) domain.Inventory {
 	return domain.Inventory{
 		ID:        entity.ID,
 		VendorID:  entity.VendorID,

@@ -2,30 +2,28 @@ package domain
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type History struct {
 	ID        int
-	OrderID   uuid.UUID
-	PaymentID uuid.UUID
+	OrderID   string
+	PaymentID string
 	Quantity  int
 	ProductID int
 	VendorID  int
-	Status    Status
+	Status    HistoryStatus
 	Active    bool
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
-type Status string
+type HistoryStatus string
 
 const (
-	CREATED   = "CREATED"
-	RUNNING   = "RUNNING"
-	PAID      = "PAID"
-	READY     = "READY"
-	SENT      = "SENT"
-	DELIVERED = "DELIVERED"
+	CREATED   HistoryStatus = "CREATED"
+	RUNNING   HistoryStatus = "RUNNING"
+	PAID      HistoryStatus = "PAID"
+	READY     HistoryStatus = "READY"
+	SENT      HistoryStatus = "SENT"
+	DELIVERED HistoryStatus = "DELIVERED"
 )

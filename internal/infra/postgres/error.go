@@ -35,7 +35,6 @@ func convertPostgresErrorToAppError(err error, inputs ...any) error {
 func generatePostgresError(pqErr *pq.Error, inputs ...any) error {
 	switch pqErr.Code {
 
-	// unique_violation
 	case "23505":
 		return apperror.Wrap(pqErr).
 			Input(inputs...).
@@ -44,7 +43,6 @@ func generatePostgresError(pqErr *pq.Error, inputs ...any) error {
 			Log().
 			Build()
 
-	// foreign_key_violation
 	case "23503":
 		return apperror.Wrap(pqErr).
 			Input(inputs...).
@@ -53,7 +51,6 @@ func generatePostgresError(pqErr *pq.Error, inputs ...any) error {
 			Log().
 			Build()
 
-	// not_null_violation
 	case "23502":
 		return apperror.Wrap(pqErr).
 			Input(inputs...).

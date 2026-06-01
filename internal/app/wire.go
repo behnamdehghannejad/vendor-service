@@ -112,7 +112,14 @@ func shutdownServer(server *http.Server) {
 	log.Warning("server stopped cleanly")
 }
 
-func createServer(cfg httphandler.HttpConfig, historyService port.HistoryService, vendorService port.VendorService, productService port.ProductService, inventoryService port.InventoryService, orderService port.OrderService) *http.Server {
+func createServer(
+	cfg httphandler.HttpConfig,
+	historyService port.HistoryService,
+	vendorService port.VendorService,
+	productService port.ProductService,
+	inventoryService port.InventoryService,
+	orderService port.OrderService,
+) *http.Server {
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.New()
@@ -120,9 +127,48 @@ func createServer(cfg httphandler.HttpConfig, historyService port.HistoryService
 	router.Use(gin.Recovery())
 	router.Use(metrics.PrometheusMiddleware())
 
+	historyHandler, vendorHandler, productHandler, _, _ := registerHandlers(
+		historyService,
+		inventoryService,
+		orderService,
+		vendorService,
+		productService,
+	)
+
+	registerRoutes(
+		router,
+		historyHandler,
+		vendorHandler,
+		productHandler,
+	)
+
+	registerMetrics(router)
+
+	return &http.Server{
+		Addr:              getAddress(cfg.Host, cfg.Port),
+		Handler:           router,
+		ReadTimeout:       5 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       120 * time.Second,
+		ReadHeaderTimeout: 2 * time.Second,
+	}
+}
+
+func registerHandlers(
+	historyService port.HistoryService,
+	inventoryService port.InventoryService,
+	orderService port.OrderService,
+	vendorService port.VendorService,
+	productService port.ProductService,
+) (
+	*httphandler.History,
+	*httphandler.Vendor,
+	*httphandler.Product,
+	*httphandler.Inventory,
+	*httphandler.Order,
+) {
 	historyHandler := httphandler.NewHistoryHandler(
 		historyService,
-		validator.NewHistory(historyService),
 	)
 
 	vendorHandler := httphandler.NewVendorHandler(
@@ -144,19 +190,7 @@ func createServer(cfg httphandler.HttpConfig, historyService port.HistoryService
 		orderService,
 		validator.NewOrder(orderService),
 	)
-
-	registerRoutes(router, historyHandler, vendorHandler, productHandler, inventoryHandler, orderHandler)
-
-	registerMetrics(router)
-
-	return &http.Server{
-		Addr:              getAddress(cfg.Host, cfg.Port),
-		Handler:           router,
-		ReadTimeout:       5 * time.Second,
-		WriteTimeout:      10 * time.Second,
-		IdleTimeout:       120 * time.Second,
-		ReadHeaderTimeout: 2 * time.Second,
-	}
+	return historyHandler, vendorHandler, productHandler, inventoryHandler, orderHandler
 }
 
 func registerRoutes(
@@ -164,8 +198,6 @@ func registerRoutes(
 	historyHandler *httphandler.History,
 	vendorHandler *httphandler.Vendor,
 	productHandler *httphandler.Product,
-	inventoryHandler *httphandler.Inventory,
-	handler *httphandler.Order,
 ) {
 	router.POST("/api/v1/vendors", vendorHandler.Create)
 	router.GET("/api/v1/vendors/:id", vendorHandler.GetById)
@@ -175,6 +207,9 @@ func registerRoutes(
 	router.POST("/api/v1/products", productHandler.Create)
 	router.GET("/api/v1/products/:id", productHandler.GetById)
 	router.GET("api/v1/products", productHandler.Filter)
+	router.PATCH("api/v1/products/:id", productHandler.Update)
+
+	router.GET("/api/v1/histories", historyHandler.Search)
 }
 
 func registerMetrics(router *gin.Engine) {

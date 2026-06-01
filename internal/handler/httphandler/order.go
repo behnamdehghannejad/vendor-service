@@ -9,7 +9,6 @@ import (
 	"github.com/behnamdehghannejad/vendorservice/internal/port"
 	"github.com/behnamdehghannejad/vendorservice/internal/validator"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type Order struct {
@@ -70,10 +69,8 @@ func (h *Order) toListOrderDomain(req dto.ManageOrdersRequest) domain.ListOrder 
 	orders := make([]domain.Order, 0, len(req.Orders))
 
 	for _, order := range req.Orders {
-		orderID, _ := uuid.Parse(order.OrderID)
-
 		orders = append(orders, domain.Order{
-			OrderID:   orderID,
+			OrderID:   order.OrderID,
 			VendorID:  order.VendorID,
 			ProductID: order.ProductID,
 			Quantity:  order.Quantity,
@@ -89,12 +86,9 @@ func (h *Order) toAcceptOrdersDomain(req dto.AcceptOrdersPaymentRequest) domain.
 	orders := make([]domain.Order, 0, len(req.Orders))
 
 	for _, order := range req.Orders {
-		orderID, _ := uuid.Parse(order.OrderID)
-		paymentID, _ := uuid.Parse(order.PaymentID)
-
 		orders = append(orders, domain.Order{
-			OrderID:   orderID,
-			PaymentID: paymentID,
+			OrderID:   order.OrderID,
+			PaymentID: order.PaymentID,
 			VendorID:  order.VendorID,
 			ProductID: order.ProductID,
 			Quantity:  order.Quantity,

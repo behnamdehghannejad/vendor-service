@@ -1,4 +1,5 @@
 -- +migrate Up
+
 CREATE TABLE products (
     id BIGSERIAL PRIMARY KEY,
 
@@ -11,6 +12,6 @@ CREATE TABLE products (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-
 -- +migrate Down
+
 DROP TABLE IF EXISTS products;

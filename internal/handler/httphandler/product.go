@@ -80,6 +80,31 @@ func (h *Product) Filter(c *gin.Context) {
 	c.JSON(http.StatusOK, h.serializeProducts(products))
 }
 
+func (h *Product) Update(c *gin.Context) {
+	idStr := c.Param("id")
+
+	var req dto.RequestUpdateProduct
+	if err := c.ShouldBind(&req); err != nil {
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
+		return
+	}
+
+	if err := h.validator.Update(req, idStr); err != nil {
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
+		return
+	}
+
+	if err := h.validator.ValidateID(idStr); err != nil {
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
+		return
+	}
+
+	h.productService.Update(domain.Product{})
+}
+
 func (h *Product) serializeProducts(products []domain.Product) dto.ProductsResponse {
 	productsResponse := make([]dto.ProductResponse, 0, len(products))
 
