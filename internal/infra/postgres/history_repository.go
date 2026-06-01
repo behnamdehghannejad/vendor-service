@@ -71,8 +71,8 @@ func (repo *HistoryRepository) Filter(filter domain.SearchHistory) ([]domain.His
 
 func (repo *HistoryRepository) toHistoryDomains(historyModels []model.HistoryModel) []domain.History {
 	histories := make([]domain.History, 0, len(historyModels))
-	for _, history := range histories {
-		histories = append(histories, history)
+	for _, historyModel := range historyModels {
+		histories = append(histories, repo.toHistoryDomain(historyModel))
 	}
 	return histories
 }
