@@ -5,6 +5,6 @@ import (
 )
 
 type HistoryService interface {
-	Update(domain.History) error
-	Search(domain.SearchHistory) ([]domain.History, error)
+	Update(domain.Transaction) error
+	Search(domain.SearchTransaction) ([]domain.Transaction, error)
 }

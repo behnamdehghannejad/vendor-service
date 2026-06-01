@@ -11,8 +11,8 @@ type UnitOfWordFactory struct {
 	db *gorm.DB
 	tx *gorm.DB
 
-	inventoryRepo *InventoryRepository
-	historyRepo   *HistoryRepository
+	inventoryRepo   *InventoryRepository
+	transactionRepo *TransactionRepository
 }
 
 func NewUnitOfWorkFactory(db *gorm.DB) *UnitOfWordFactory {

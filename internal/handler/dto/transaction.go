@@ -6,7 +6,7 @@ import (
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
 )
 
-type HistoryResponse struct {
+type TransactionResponse struct {
 	Reserved  int       `json:"quantity"`
 	ProductID int       `json:"product_id"`
 	VendorID  int       `json:"vendor_id"`
@@ -38,5 +38,5 @@ type SearchHistory struct {
 }
 
 type ResponseHistories struct {
-	Items []HistoryResponse `json:"items"`
+	Items []TransactionResponse `json:"items"`
 }

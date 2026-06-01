@@ -6,7 +6,7 @@ import (
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
 )
 
-type HistoryModel struct {
+type TransactionModel struct {
 	ID        string               `gorm:"primaryKey;column:id"`
 	Reserved  int                  `gorm:"column:reserved"`
 	ProductID int                  `gorm:"column:product_id"`
@@ -16,6 +16,6 @@ type HistoryModel struct {
 	UpdatedAt time.Time            `gorm:"column:updated_at"`
 }
 
-func (HistoryModel) TableName() string {
-	return "histories"
+func (TransactionModel) TableName() string {
+	return "transactions"
 }

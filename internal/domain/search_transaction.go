@@ -1,6 +1,6 @@
 package domain
 
-type SearchHistory struct {
+type SearchTransaction struct {
 	Activation *bool
 	PaymentID  string
 	OrderID    string

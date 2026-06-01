@@ -12,8 +12,8 @@ import (
 type ReserveInventoryUnitOfWork struct {
 	tx *gorm.DB
 
-	inventoryRepo *InventoryRepository
-	historyRepo   *HistoryRepository
+	inventoryRepo   *InventoryRepository
+	transactionRepo *TransactionRepository
 }
 
 func NewReserveInventoryUnitOfWork(
@@ -27,9 +27,9 @@ func NewReserveInventoryUnitOfWork(
 			Build()
 	}
 	return &ReserveInventoryUnitOfWork{
-		tx:            tx,
-		inventoryRepo: NewInventoryRepository(tx),
-		historyRepo:   NewHistoryRepository(tx),
+		tx:              tx,
+		inventoryRepo:   NewInventoryRepository(tx),
+		transactionRepo: NewTransactionRepository(tx),
 	}, nil
 }
 
@@ -37,8 +37,8 @@ func (iuw *ReserveInventoryUnitOfWork) IncreaseReserveInventory(requestReserve d
 	return iuw.inventoryRepo.IncreaseReserveInventory(requestReserve)
 }
 
-func (iuw *ReserveInventoryUnitOfWork) CreateHistory(history domain.History) error {
-	return iuw.historyRepo.Create(history)
+func (iuw *ReserveInventoryUnitOfWork) CreateHistory(transaction domain.Transaction) error {
+	return iuw.transactionRepo.Create(transaction)
 }
 
 func (iuw *ReserveInventoryUnitOfWork) Commit() error {

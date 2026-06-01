@@ -14,7 +14,7 @@ type History struct {
 	service port.HistoryService
 }
 
-func NewHistoryHandler(service port.HistoryService) *History {
+func NewTransactionHandler(service port.HistoryService) *History {
 	return &History{
 		service: service,
 	}
@@ -29,7 +29,7 @@ func (h *History) Search(c *gin.Context) {
 		return
 	}
 
-	histories, err := h.service.Search(domain.SearchHistory{
+	transactions, err := h.service.Search(domain.SearchTransaction{
 		Activation: h.GetIsActiveFromQuery(q.Activation),
 		VendorID:   q.VendorID,
 		ProductID:  q.ProductID,
@@ -42,7 +42,7 @@ func (h *History) Search(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, dto.ResponseHistories{
-		Items: h.serializeHistories(histories),
+		Items: h.serializeHistories(transactions),
 	})
 }
 
@@ -58,22 +58,22 @@ func (*History) GetIsActiveFromQuery(activeStr string) *bool {
 	return nil
 }
 
-func (h *History) serializeHistory(history domain.History) dto.HistoryResponse {
-	return dto.HistoryResponse{
-		Reserved:  history.Reserved,
-		ProductID: history.ProductID,
-		VendorID:  history.VendorID,
-		Status:    string(history.Status),
-		CreatedAt: history.CreatedAt,
-		UpdatedAt: history.UpdatedAt,
+func (h *History) serializeTransaction(transaction domain.Transaction) dto.TransactionResponse {
+	return dto.TransactionResponse{
+		Reserved:  transaction.Reserved,
+		ProductID: transaction.ProductID,
+		VendorID:  transaction.VendorID,
+		Status:    string(transaction.Status),
+		CreatedAt: transaction.CreatedAt,
+		UpdatedAt: transaction.UpdatedAt,
 	}
 }
 
-func (h *History) serializeHistories(histories []domain.History) []dto.HistoryResponse {
-	items := make([]dto.HistoryResponse, 0, len(histories))
+func (h *History) serializeHistories(transactions []domain.Transaction) []dto.TransactionResponse {
+	items := make([]dto.TransactionResponse, 0, len(transactions))
 
-	for _, history := range histories {
-		items = append(items, h.serializeHistory(history))
+	for _, transaction := range transactions {
+		items = append(items, h.serializeTransaction(transaction))
 	}
 
 	return items

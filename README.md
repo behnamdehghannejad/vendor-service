@@ -8,7 +8,7 @@ Inventory and vendor management service built with Go, Gin, and Prometheus.
 - Product management
 - Inventory management
 - Inventory reservation
-- Inventory history tracking
+- Inventory transaction tracking
 - Health checks
 - Prometheus metrics
 
@@ -399,7 +399,7 @@ History records track inventory reservations and status changes.
 ## Search Histories
 
 ```http
-GET /api/v1/histories
+GET /api/v1/transactions
 ```
 
 ### Query Parameters
@@ -414,7 +414,7 @@ GET /api/v1/histories
 ### Example
 
 ```http
-GET /api/v1/histories?status=PAID&vendor_id=1
+GET /api/v1/transactions?status=PAID&vendor_id=1
 ```
 
 ### Response
@@ -473,7 +473,7 @@ DELIVERED
 3. Add inventory for a vendor-product pair.
 4. Query inventory availability.
 5. Reserve inventory.
-6. Track inventory history through status changes.
+6. Track inventory transaction through status changes.
 
 ---
 
