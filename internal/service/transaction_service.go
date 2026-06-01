@@ -18,16 +18,16 @@ func NewHistoryService(repository port.HistoryRepository) *HistoryService {
 	return &HistoryService{repository: repository}
 }
 
-func (s *HistoryService) Update(history domain.History) error {
-	return s.repository.Update(history)
+func (s *HistoryService) Update(transaction domain.Transaction) error {
+	return s.repository.Update(transaction)
 }
 
-func (s *HistoryService) Search(search domain.SearchHistory) ([]domain.History, error) {
+func (s *HistoryService) Search(search domain.SearchTransaction) ([]domain.Transaction, error) {
 	return s.repository.Filter(search)
 }
 
 func (s *HistoryService) Approve(ID string) error {
-	history, err := s.repository.GetByID(ID)
+	transaction, err := s.repository.GetByID(ID)
 	if err != nil {
 		return err
 	}
@@ -52,9 +52,9 @@ func (s *HistoryService) Approve(ID string) error {
 	}
 
 	err = auw.AcceptReserve(domain.FinalizeReservation{
-		VendorID:  history.VendorID,
-		ProductID: history.ProductID,
-		Reserve:   history.Reserved,
+		VendorID:  transaction.VendorID,
+		ProductID: transaction.ProductID,
+		Reserve:   transaction.Reserved,
 	})
 
 	err = auw.Commit()
@@ -65,7 +65,7 @@ func (s *HistoryService) Approve(ID string) error {
 }
 
 func (s *HistoryService) Reject(ID string) error {
-	history, err := s.repository.GetByID(ID)
+	transaction, err := s.repository.GetByID(ID)
 	if err != nil {
 		return err
 	}
@@ -90,9 +90,9 @@ func (s *HistoryService) Reject(ID string) error {
 	}
 
 	err = auw.RejectReserve(domain.FinalizeReservation{
-		VendorID:  history.VendorID,
-		ProductID: history.ProductID,
-		Reserve:   history.Reserved,
+		VendorID:  transaction.VendorID,
+		ProductID: transaction.ProductID,
+		Reserve:   transaction.Reserved,
 	})
 
 	err = auw.Commit()

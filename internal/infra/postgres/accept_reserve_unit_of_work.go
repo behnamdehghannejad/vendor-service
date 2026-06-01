@@ -12,8 +12,8 @@ import (
 type AcceptReserveUnitOfWork struct {
 	tx *gorm.DB
 
-	inventoryRepo *InventoryRepository
-	historyRepo   *HistoryRepository
+	inventoryRepo   *InventoryRepository
+	transactionRepo *TransactionRepository
 }
 
 func NewAcceptReserveUnitOfWork(
@@ -27,9 +27,9 @@ func NewAcceptReserveUnitOfWork(
 			Build()
 	}
 	return &AcceptReserveUnitOfWork{
-		tx:            tx,
-		inventoryRepo: NewInventoryRepository(tx),
-		historyRepo:   NewHistoryRepository(tx),
+		tx:              tx,
+		inventoryRepo:   NewInventoryRepository(tx),
+		transactionRepo: NewTransactionRepository(tx),
 	}, nil
 }
 
@@ -38,7 +38,7 @@ func (iuw *AcceptReserveUnitOfWork) AcceptReserve(final domain.FinalizeReservati
 }
 
 func (iuw *AcceptReserveUnitOfWork) AcceptHistory(ID string) error {
-	return iuw.historyRepo.Approve(ID)
+	return iuw.transactionRepo.Approve(ID)
 }
 
 func (iuw *AcceptReserveUnitOfWork) Commit() error {

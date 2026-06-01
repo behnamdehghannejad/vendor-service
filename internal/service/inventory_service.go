@@ -91,7 +91,7 @@ func (s *InventoryService) ReserveQuantity(reserveRequest domain.ReserveRequest)
 		return err
 	}
 
-	err = iwf.CreateHistory(domain.History{
+	err = iwf.CreateHistory(domain.Transaction{
 		ID:        reserveRequest.RequestID,
 		Reserved:  reserveRequest.Reserved,
 		VendorID:  reserveRequest.VendorID,

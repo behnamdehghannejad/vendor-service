@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type History struct {
+type Transaction struct {
 	ID        string
 	Reserved  int
 	ProductID int

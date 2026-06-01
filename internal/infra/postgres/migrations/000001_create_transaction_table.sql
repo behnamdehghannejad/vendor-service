@@ -1,5 +1,5 @@
 -- +migrate Up
-CREATE TABLE histories (
+CREATE TABLE transactions (
     id VARCHAR(36) PRIMARY KEY,
 
     reserved INT NOT NULL CHECK (reserved > 0),
@@ -14,4 +14,4 @@ CREATE TABLE histories (
 );
 
 -- +migrate Down
-DROP TABLE IF EXISTS histories;
+DROP TABLE IF EXISTS transactions;
