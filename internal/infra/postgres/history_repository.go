@@ -3,6 +3,7 @@ package postgres
 import (
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
 	"github.com/behnamdehghannejad/vendorservice/internal/infra/postgres/model"
+	"github.com/behnamdehghannejad/vendorservice/internal/pkg/apperror"
 
 	"gorm.io/gorm"
 )
@@ -67,6 +68,38 @@ func (repo *HistoryRepository) Filter(filter domain.SearchHistory) ([]domain.His
 	}
 
 	return repo.toHistoryDomains(histories), err
+}
+
+func (repo *HistoryRepository) Approve(ID string) error {
+	err := repo.db.Model(&model.HistoryModel{}).
+		Where("id = ?", ID).
+		Updates(map[string]interface{}{
+			"status":     domain.HISTORY_SUCCESS,
+			"updated_at": gorm.Expr("CURRENT_TIMESTAMP"),
+		}).Error
+	if err != nil {
+		return apperror.Wrap(err).
+			UnExpected().
+			Log().
+			Build()
+	}
+	return nil
+}
+
+func (repo *HistoryRepository) Reject(ID string) error {
+	err := repo.db.Model(&model.HistoryModel{}).
+		Where("id = ?", ID).
+		Updates(map[string]interface{}{
+			"status":     domain.HISTORY_FAIL,
+			"updated_at": gorm.Expr("CURRENT_TIMESTAMP"),
+		}).Error
+	if err != nil {
+		return apperror.Wrap(err).
+			UnExpected().
+			Log().
+			Build()
+	}
+	return nil
 }
 
 func (repo *HistoryRepository) toHistoryDomains(historyModels []model.HistoryModel) []domain.History {

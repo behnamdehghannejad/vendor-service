@@ -8,4 +8,6 @@ type HistoryRepository interface {
 	Create(domain.History) error
 	Update(domain.History) error
 	Filter(domain.SearchHistory) ([]domain.History, error)
+	Approve(string) error
+	Reject(string) error
 }

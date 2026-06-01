@@ -19,5 +19,5 @@ type HistoryStatus string
 const (
 	HISTORY_DRAFT   HistoryStatus = "DRAFTED"
 	HISTORY_SUCCESS HistoryStatus = "SUCCESS"
-	HISTORY_Fil     HistoryStatus = "FAIL"
+	HISTORY_FAIL    HistoryStatus = "FAIL"
 )

@@ -3,6 +3,7 @@ package postgres
 import (
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
 	"github.com/behnamdehghannejad/vendorservice/internal/infra/postgres/model"
+	"github.com/behnamdehghannejad/vendorservice/internal/pkg/apperror"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -92,6 +93,41 @@ func (repo *InventoryRepository) Filter(filter domain.SearchInventory) ([]domain
 	}
 
 	return repo.toInventoryDomains(inventories), nil
+}
+
+func (repo *InventoryRepository) AcceptReserve(final domain.FinalizeReservation) error {
+	err := repo.db.Model(&model.InventoryModel{}).
+		Where("vendor_id = ? AND product_id = ? AND version = ?", final.VendorID, final.ProductID, final.V).
+		Updates(map[string]interface{}{
+			"quantity":   gorm.Expr("quantity - ?", final.Reserve),
+			"reserved":   gorm.Expr("reserved - ?", final.Reserve),
+			"version":    gorm.Expr("version + 1"),
+			"updated_at": gorm.Expr("CURRENT_TIMESTAMP"),
+		}).Error
+	if err != nil {
+		return apperror.Wrap(err).
+			UnExpected().
+			Log().
+			Build()
+	}
+	return nil
+}
+
+func (repo *InventoryRepository) RejectReserve(final domain.FinalizeReservation) error {
+	err := repo.db.Model(&model.InventoryModel{}).
+		Where("vendor_id = ? AND product_id = ? AND version = ?", final.VendorID, final.ProductID, final.V).
+		Updates(map[string]interface{}{
+			"reserved":   gorm.Expr("reserved - ?", final.Reserve),
+			"version":    gorm.Expr("version + 1"),
+			"updated_at": gorm.Expr("CURRENT_TIMESTAMP"),
+		}).Error
+	if err != nil {
+		return apperror.Wrap(err).
+			UnExpected().
+			Log().
+			Build()
+	}
+	return nil
 }
 
 func (repo *InventoryRepository) toInventoryDomains(inventoryModels []model.InventoryModel) []domain.Inventory {
