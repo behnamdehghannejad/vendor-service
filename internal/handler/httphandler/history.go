@@ -31,8 +31,6 @@ func (h *History) Search(c *gin.Context) {
 
 	histories, err := h.service.Search(domain.SearchHistory{
 		Activation: h.GetIsActiveFromQuery(q.Activation),
-		PaymentID:  q.PaymentID,
-		OrderID:    q.OrderID,
 		VendorID:   q.VendorID,
 		ProductID:  q.ProductID,
 		Status:     q.Status,

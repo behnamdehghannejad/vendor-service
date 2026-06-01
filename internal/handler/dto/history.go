@@ -7,8 +7,6 @@ import (
 )
 
 type HistoryResponse struct {
-	OrderID   string    `json:"order_id"`
-	PaymentID string    `json:"payment_id"`
 	Reserved  int       `json:"quantity"`
 	ProductID int       `json:"product_id"`
 	VendorID  int       `json:"vendor_id"`
@@ -27,17 +25,13 @@ type HistoryActiveRequest struct {
 }
 
 type CreateHistoryRequest struct {
-	OrderID   string `json:"order_id"`
-	PaymentID string `json:"payment_id"`
-	Quantity  int    `json:"quantity"`
-	ProductID int    `json:"product_id"`
-	VendorID  int    `json:"vendor_id"`
+	Quantity  int `json:"quantity"`
+	ProductID int `json:"product_id"`
+	VendorID  int `json:"vendor_id"`
 }
 
 type SearchHistory struct {
 	Activation string                `form:"activation"`
-	PaymentID  string                `form:"payment_id"`
-	OrderID    string                `form:"order_id"`
 	VendorID   *int                  `form:"vendor_id" binding:"omitempty,gte=0"`
 	ProductID  *int                  `form:"product_id" binding:"omitempty,gte=0"`
 	Status     *domain.HistoryStatus `form:"status" binding:"omitempty,oneof=CREATED RUNNING PAID READY SENT DELIVERED"`
