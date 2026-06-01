@@ -10,4 +10,5 @@ type HistoryRepository interface {
 	Filter(domain.SearchHistory) ([]domain.History, error)
 	Approve(string) error
 	Reject(string) error
+	GetByID(string) (domain.History, error)
 }

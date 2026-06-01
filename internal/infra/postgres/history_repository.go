@@ -33,6 +33,15 @@ func (repo *HistoryRepository) Update(history domain.History) error {
 	return nil
 }
 
+func (repo *HistoryRepository) GetByID(ID string) (domain.History, error) {
+	var historyModel model.HistoryModel
+	if err := repo.db.Where("id = ?", ID).First(&historyModel).Error; err != nil {
+		return domain.History{}, convertPostgresErrorToAppError(err)
+	}
+
+	return repo.toHistoryDomain(historyModel), nil
+}
+
 func (repo *HistoryRepository) Filter(filter domain.SearchHistory) ([]domain.History, error) {
 	q := repo.db.Model(&model.HistoryModel{})
 

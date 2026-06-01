@@ -97,7 +97,7 @@ func (repo *InventoryRepository) Filter(filter domain.SearchInventory) ([]domain
 
 func (repo *InventoryRepository) AcceptReserve(final domain.FinalizeReservation) error {
 	err := repo.db.Model(&model.InventoryModel{}).
-		Where("vendor_id = ? AND product_id = ? AND version = ?", final.VendorID, final.ProductID, final.V).
+		Where("vendor_id = ? AND product_id = ?", final.VendorID, final.ProductID).
 		Updates(map[string]interface{}{
 			"quantity":   gorm.Expr("quantity - ?", final.Reserve),
 			"reserved":   gorm.Expr("reserved - ?", final.Reserve),
@@ -115,7 +115,7 @@ func (repo *InventoryRepository) AcceptReserve(final domain.FinalizeReservation)
 
 func (repo *InventoryRepository) RejectReserve(final domain.FinalizeReservation) error {
 	err := repo.db.Model(&model.InventoryModel{}).
-		Where("vendor_id = ? AND product_id = ? AND version = ?", final.VendorID, final.ProductID, final.V).
+		Where("vendor_id = ? AND product_id = ?", final.VendorID, final.ProductID).
 		Updates(map[string]interface{}{
 			"reserved":   gorm.Expr("reserved - ?", final.Reserve),
 			"version":    gorm.Expr("version + 1"),
