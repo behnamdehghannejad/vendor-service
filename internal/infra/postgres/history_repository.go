@@ -32,15 +32,6 @@ func (repo *HistoryRepository) Update(history domain.History) error {
 	return nil
 }
 
-func (repo *HistoryRepository) FindByOrderID(id string) (domain.History, error) {
-	var history model.HistoryModel
-	if err := repo.db.Where("order_id = ?", id).First(&history).Error; err != nil {
-		return domain.History{}, convertPostgresErrorToAppError(err)
-	}
-	domainHistory := repo.toHistoryDomain(history)
-	return domainHistory, nil
-}
-
 func (repo *HistoryRepository) Filter(filter domain.SearchHistory) ([]domain.History, error) {
 	q := repo.db.Model(&model.HistoryModel{})
 

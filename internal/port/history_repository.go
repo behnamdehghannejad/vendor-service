@@ -7,6 +7,5 @@ import (
 type HistoryRepository interface {
 	Create(domain.History) error
 	Update(domain.History) error
-	FindByOrderID(string) (domain.History, error)
 	Filter(domain.SearchHistory) ([]domain.History, error)
 }

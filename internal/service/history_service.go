@@ -17,10 +17,6 @@ func (s *HistoryService) Update(history domain.History) error {
 	return s.repository.Update(history)
 }
 
-func (s *HistoryService) FindByOrderID(id string) (domain.History, error) {
-	return s.repository.FindByOrderID(id)
-}
-
 func (s *HistoryService) Search(search domain.SearchHistory) ([]domain.History, error) {
 	return s.repository.Filter(search)
 }

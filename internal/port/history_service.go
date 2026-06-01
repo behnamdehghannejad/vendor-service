@@ -6,6 +6,5 @@ import (
 
 type HistoryService interface {
 	Update(domain.History) error
-	FindByOrderID(string) (domain.History, error)
 	Search(domain.SearchHistory) ([]domain.History, error)
 }
