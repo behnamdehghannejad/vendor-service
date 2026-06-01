@@ -32,7 +32,7 @@ func (s *InventoryService) Search(search domain.SearchInventory) ([]domain.Inven
 
 func (s *InventoryService) Upsert(inventoryRequest domain.Inventory) error {
 	inventory, err := s.repository.GetInventory(inventoryRequest.VendorID, inventoryRequest.ProductID)
-	if appErr, ok := err.(*apperror.AppError); ok && appErr.GetErrorType() != apperror.NotFound {
+	if appErr, ok := err.(*apperror.AppError); !ok || appErr.GetErrorType() != apperror.NotFound {
 		return err
 	}
 
