@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/apperror"
+	"github.com/behnamdehghannejad/vendorservice/internal/pkg/utils"
 	"github.com/spf13/viper"
 )
 
@@ -17,7 +18,7 @@ func Load() (Config, error) {
 
 	viper.SetConfigName(env)
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath(os.Getenv("CONFIG_PATH"))
+	viper.AddConfigPath(utils.GetRootPath())
 
 	viper.AutomaticEnv()
 

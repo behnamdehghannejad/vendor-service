@@ -3,11 +3,13 @@ package repository
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/behnamdehghannejad/vendorservice/internal/infra/postgres"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/config"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/log"
+	"github.com/behnamdehghannejad/vendorservice/internal/pkg/utils"
 )
 
 var (
@@ -18,9 +20,13 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	os.Setenv("CONFIG_PATH", "../../..")
+	if err := utils.SetRootPath("../../../"); err != nil {
+		fmt.Printf("error to set path that is %v\n", err)
+		os.Exit(1)
+	}
 
-	err := log.Initialize()
+	fileLog := filepath.Join(utils.GetRootPath(), "application.log")
+	err := log.Initialize(fileLog)
 	if err != nil {
 		os.Exit(1)
 	}
@@ -42,7 +48,7 @@ func TestMain(m *testing.M) {
 		MigrationPath: cfg.Database.MigrationPath,
 	}
 
-	migrator, err := postgres.NewMigrator(postgresConfig)
+	migrator := postgres.NewMigrator(postgresConfig)
 	if err != nil {
 		fmt.Printf("error load config %v\n", err)
 		os.Exit(1)

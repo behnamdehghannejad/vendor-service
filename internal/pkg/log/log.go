@@ -12,8 +12,8 @@ var (
 	once   sync.Once
 )
 
-func Initialize() error {
-	file, err := os.OpenFile("application.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)
+func Initialize(filePath string) error {
+	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)
 	if err != nil {
 		return err
 	}

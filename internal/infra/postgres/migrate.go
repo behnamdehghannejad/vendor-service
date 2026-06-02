@@ -3,10 +3,10 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
-	"os"
 	"path/filepath"
 
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/apperror"
+	"github.com/behnamdehghannejad/vendorservice/internal/pkg/utils"
 
 	_ "github.com/lib/pq"
 
@@ -23,14 +23,8 @@ type Migrator struct {
 	migrations *migrate.FileMigrationSource
 }
 
-func NewMigrator(cfg PostgresConfig) (*Migrator, error) {
-	root, err := filepath.Abs(os.Getenv("CONFIG_PATH"))
-	if err != nil {
-		return nil, apperror.Wrap(err).
-			Warning().
-			Forbidden().
-			Build()
-	}
+func NewMigrator(cfg PostgresConfig) *Migrator {
+	root := utils.GetRootPath()
 
 	migrationPath := filepath.Join(root, cfg.MigrationPath)
 	migrations := &migrate.FileMigrationSource{
@@ -45,7 +39,7 @@ func NewMigrator(cfg PostgresConfig) (*Migrator, error) {
 		password:   cfg.Password,
 		dialect:    "postgres",
 		migrations: migrations,
-	}, nil
+	}
 }
 
 func (m *Migrator) UP() error {

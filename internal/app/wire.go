@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/config"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/log"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/metrics"
+	"github.com/behnamdehghannejad/vendorservice/internal/pkg/utils"
 	"github.com/behnamdehghannejad/vendorservice/internal/port"
 	"github.com/behnamdehghannejad/vendorservice/internal/scheduler"
 	"github.com/behnamdehghannejad/vendorservice/internal/service"
@@ -25,13 +27,15 @@ import (
 )
 
 func RunHttp() {
-	os.Setenv("CONFIG_PATH", "./")
-
-	err := log.Initialize()
-	if err != nil {
+	if err := utils.SetRootPath("./"); err != nil {
 		return
 	}
 
+	fileLog := filepath.Join(utils.GetRootPath(), "application.log")
+	err := log.Initialize(fileLog)
+	if err != nil {
+		return
+	}
 	cfg, err := config.Load()
 	if err != nil {
 		return
@@ -74,7 +78,8 @@ func RunHttp() {
 func RunScheduler() {
 	os.Setenv("CONFIG_PATH", "./")
 
-	err := log.Initialize()
+	fileLog := filepath.Join(utils.GetRootPath(), "application.log")
+	err := log.Initialize(fileLog)
 	if err != nil {
 		return
 	}
@@ -111,10 +116,8 @@ func RunScheduler() {
 }
 
 func migrate(cfg postgres.PostgresConfig) error {
-	migrator, err := postgres.NewMigrator(cfg)
-	if err != nil {
-		return err
-	}
+	migrator := postgres.NewMigrator(cfg)
+
 	if err := migrator.UP(); err != nil {
 		return err
 	}
