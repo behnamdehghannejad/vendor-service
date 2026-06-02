@@ -69,7 +69,10 @@ func Run() {
 }
 
 func migrate(cfg postgres.PostgresConfig) error {
-	migrator := postgres.NewMigrator(cfg)
+	migrator, err := postgres.NewMigrator(cfg)
+	if err != nil {
+		return err
+	}
 	if err := migrator.UP(); err != nil {
 		return err
 	}

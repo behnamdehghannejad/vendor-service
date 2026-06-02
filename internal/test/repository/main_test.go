@@ -39,10 +39,14 @@ func TestMain(m *testing.M) {
 		Port:          cfg.Database.Port,
 		Migrate:       cfg.Database.Migrate,
 		SSLMode:       cfg.Database.SSLMode,
-		MigrationPath: "../../.././" + cfg.Database.MigrationPath,
+		MigrationPath: cfg.Database.MigrationPath,
 	}
 
-	migrator := postgres.NewMigrator(postgresConfig)
+	migrator, err := postgres.NewMigrator(postgresConfig)
+	if err != nil {
+		fmt.Printf("error load config %v\n", err)
+		os.Exit(1)
+	}
 	if err := migrator.UP(); err != nil {
 		fmt.Printf("error to migrate database %v\n", err)
 		os.Exit(1)
