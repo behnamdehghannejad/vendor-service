@@ -77,7 +77,7 @@ func migrate(cfg postgres.PostgresConfig) error {
 }
 
 func registerServices(cfg postgres.PostgresConfig) (
-	port.HistoryService,
+	port.TransactionService,
 	port.VendorService,
 	port.ProductService,
 	port.InventoryService,
@@ -95,7 +95,7 @@ func registerServices(cfg postgres.PostgresConfig) (
 
 	unitOfWorkFactory := postgres.NewUnitOfWorkFactory(db)
 
-	transactionService := service.NewHistoryService(transactionRepository)
+	transactionService := service.NewTransactionService(transactionRepository)
 	vendorService := service.NewVendorService(vendorRepository)
 	productService := service.NewProductService(productRepository)
 	inventoryService := service.NewInventoryService(inventoryRepository, unitOfWorkFactory)
@@ -129,7 +129,7 @@ func shutdownServer(server *http.Server) {
 
 func createServer(
 	cfg httphandler.HttpConfig,
-	transactionService port.HistoryService,
+	transactionService port.TransactionService,
 	vendorService port.VendorService,
 	productService port.ProductService,
 	inventoryService port.InventoryService,
@@ -167,12 +167,12 @@ func createServer(
 }
 
 func registerHandlers(
-	transactionService port.HistoryService,
+	transactionService port.TransactionService,
 	inventoryService port.InventoryService,
 	vendorService port.VendorService,
 	productService port.ProductService,
 ) (
-	*httphandler.History,
+	*httphandler.Transaction,
 	*httphandler.Vendor,
 	*httphandler.Product,
 	*httphandler.Inventory,
@@ -201,7 +201,7 @@ func registerHandlers(
 
 func registerRoutes(
 	router *gin.Engine,
-	transactionHandler *httphandler.History,
+	transactionHandler *httphandler.Transaction,
 	vendorHandler *httphandler.Vendor,
 	productHandler *httphandler.Product,
 	inventoryHandler *httphandler.Inventory,

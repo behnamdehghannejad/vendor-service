@@ -31,7 +31,7 @@ func (iuw *ReserveInventoryUnitOfWork) IncreaseReserveInventory(requestReserve d
 	return iuw.inventoryRepo.IncreaseReserveInventory(requestReserve)
 }
 
-func (iuw *ReserveInventoryUnitOfWork) CreateHistory(transaction domain.Transaction) error {
+func (iuw *ReserveInventoryUnitOfWork) CreateTransaction(transaction domain.Transaction) error {
 	return iuw.transactionRepo.Create(transaction)
 }
 

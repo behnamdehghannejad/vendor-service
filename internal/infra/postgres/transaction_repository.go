@@ -19,7 +19,7 @@ func NewTransactionRepository(db *gorm.DB) *TransactionRepository {
 }
 
 func (repo *TransactionRepository) Create(transaction domain.Transaction) error {
-	transactionModel := repo.toHistoryModel(transaction)
+	transactionModel := repo.toTransactionModel(transaction)
 	if err := repo.db.Create(&transactionModel).Error; err != nil {
 		return convertPostgresErrorToAppError(err)
 	}
@@ -27,7 +27,7 @@ func (repo *TransactionRepository) Create(transaction domain.Transaction) error 
 }
 
 func (repo *TransactionRepository) Update(transaction domain.Transaction) error {
-	if err := repo.db.Save(repo.toHistoryModel(transaction)).Error; err != nil {
+	if err := repo.db.Save(repo.toTransactionModel(transaction)).Error; err != nil {
 		return convertPostgresErrorToAppError(err)
 	}
 	return nil
@@ -39,7 +39,7 @@ func (repo *TransactionRepository) GetByID(ID string) (domain.Transaction, error
 		return domain.Transaction{}, convertPostgresErrorToAppError(err)
 	}
 
-	return repo.toHistoryDomain(transactionModel), nil
+	return repo.toTransactionDomain(transactionModel), nil
 }
 
 func (repo *TransactionRepository) Filter(filter domain.SearchTransaction) ([]domain.Transaction, error) {
@@ -76,7 +76,7 @@ func (repo *TransactionRepository) Filter(filter domain.SearchTransaction) ([]do
 		return nil, convertPostgresErrorToAppError(err)
 	}
 
-	return repo.toHistoryDomains(transactions), err
+	return repo.toTransactionDomains(transactions), err
 }
 
 func (repo *TransactionRepository) Approve(ID string) error {
@@ -111,15 +111,15 @@ func (repo *TransactionRepository) Reject(ID string) error {
 	return nil
 }
 
-func (repo *TransactionRepository) toHistoryDomains(transactionModels []model.TransactionModel) []domain.Transaction {
+func (repo *TransactionRepository) toTransactionDomains(transactionModels []model.TransactionModel) []domain.Transaction {
 	transactions := make([]domain.Transaction, 0, len(transactionModels))
 	for _, transactionModel := range transactionModels {
-		transactions = append(transactions, repo.toHistoryDomain(transactionModel))
+		transactions = append(transactions, repo.toTransactionDomain(transactionModel))
 	}
 	return transactions
 }
 
-func (repo *TransactionRepository) toHistoryModel(domain domain.Transaction) model.TransactionModel {
+func (repo *TransactionRepository) toTransactionModel(domain domain.Transaction) model.TransactionModel {
 	return model.TransactionModel{
 		ID:        domain.ID,
 		Reserved:  domain.Reserved,
@@ -128,7 +128,7 @@ func (repo *TransactionRepository) toHistoryModel(domain domain.Transaction) mod
 	}
 }
 
-func (repo *TransactionRepository) toHistoryDomain(transaction model.TransactionModel) domain.Transaction {
+func (repo *TransactionRepository) toTransactionDomain(transaction model.TransactionModel) domain.Transaction {
 	return domain.Transaction{
 		ID:        transaction.ID,
 		Reserved:  transaction.Reserved,

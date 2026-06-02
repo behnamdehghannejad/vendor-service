@@ -9,24 +9,24 @@ import (
 	"github.com/behnamdehghannejad/vendorservice/internal/port"
 )
 
-type HistoryService struct {
-	repository        port.HistoryRepository
+type TransactionService struct {
+	repository        port.TransactionRepository
 	unitOfWorkFactory port.UnitOfWorkFactor
 }
 
-func NewHistoryService(repository port.HistoryRepository) *HistoryService {
-	return &HistoryService{repository: repository}
+func NewTransactionService(repository port.TransactionRepository) *TransactionService {
+	return &TransactionService{repository: repository}
 }
 
-func (s *HistoryService) Update(transaction domain.Transaction) error {
+func (s *TransactionService) Update(transaction domain.Transaction) error {
 	return s.repository.Update(transaction)
 }
 
-func (s *HistoryService) Search(search domain.SearchTransaction) ([]domain.Transaction, error) {
+func (s *TransactionService) Search(search domain.SearchTransaction) ([]domain.Transaction, error) {
 	return s.repository.Filter(search)
 }
 
-func (s *HistoryService) Approve(ID string) error {
+func (s *TransactionService) Approve(ID string) error {
 	transaction, err := s.repository.GetByID(ID)
 	if err != nil {
 		return err
@@ -46,7 +46,7 @@ func (s *HistoryService) Approve(ID string) error {
 		}
 	}()
 
-	err = auw.AcceptHistory(ID)
+	err = auw.AcceptTransaction(ID)
 	if err != nil {
 		return err
 	}
@@ -64,7 +64,7 @@ func (s *HistoryService) Approve(ID string) error {
 	return nil
 }
 
-func (s *HistoryService) Reject(ID string) error {
+func (s *TransactionService) Reject(ID string) error {
 	transaction, err := s.repository.GetByID(ID)
 	if err != nil {
 		return err
@@ -84,7 +84,7 @@ func (s *HistoryService) Reject(ID string) error {
 		}
 	}()
 
-	err = auw.RejectHistory(ID)
+	err = auw.RejectTransaction(ID)
 	if err != nil {
 		return err
 	}

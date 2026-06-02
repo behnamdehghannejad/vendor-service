@@ -6,5 +6,5 @@ type SearchTransaction struct {
 	OrderID    string
 	VendorID   *int
 	ProductID  *int
-	Status     *HistoryStatus
+	Status     *TransactionStatus
 }

@@ -10,18 +10,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type History struct {
-	service port.HistoryService
+type Transaction struct {
+	service port.TransactionService
 }
 
-func NewTransactionHandler(service port.HistoryService) *History {
-	return &History{
+func NewTransactionHandler(service port.TransactionService) *Transaction {
+	return &Transaction{
 		service: service,
 	}
 }
 
-func (h *History) Search(c *gin.Context) {
-	var q dto.SearchHistory
+func (h *Transaction) Search(c *gin.Context) {
+	var q dto.SearchTransaction
 
 	if err := c.ShouldBindQuery(&q); err != nil {
 		errorResponse, status := httperror.Handle(err)
@@ -46,7 +46,7 @@ func (h *History) Search(c *gin.Context) {
 	})
 }
 
-func (*History) GetIsActiveFromQuery(activeStr string) *bool {
+func (*Transaction) GetIsActiveFromQuery(activeStr string) *bool {
 	active := true
 	deActive := false
 	switch activeStr {
@@ -58,7 +58,7 @@ func (*History) GetIsActiveFromQuery(activeStr string) *bool {
 	return nil
 }
 
-func (h *History) serializeTransaction(transaction domain.Transaction) dto.TransactionResponse {
+func (h *Transaction) serializeTransaction(transaction domain.Transaction) dto.TransactionResponse {
 	return dto.TransactionResponse{
 		Reserved:  transaction.Reserved,
 		ProductID: transaction.ProductID,
@@ -69,7 +69,7 @@ func (h *History) serializeTransaction(transaction domain.Transaction) dto.Trans
 	}
 }
 
-func (h *History) serializeHistories(transactions []domain.Transaction) []dto.TransactionResponse {
+func (h *Transaction) serializeHistories(transactions []domain.Transaction) []dto.TransactionResponse {
 	items := make([]dto.TransactionResponse, 0, len(transactions))
 
 	for _, transaction := range transactions {
