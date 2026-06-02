@@ -8,13 +8,12 @@ type CreateProductRequest struct {
 }
 
 type ProductResponse struct {
-	ID                 int       `json:"id"`
-	Name               string    `json:"name"`
-	Description        string    `json:"description"`
-	Active             bool      `json:"active"`
-	DiscountPercentage float64   `json:"product_percentage"`
-	CreatedAt          time.Time `json:"created_at"`
-	UpdatedAt          time.Time `json:"updated_at"`
+	ID          int       `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Active      bool      `json:"active"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type ProductsResponse struct {
