@@ -96,7 +96,7 @@ func (s *InventoryService) ReserveQuantity(reserveRequest domain.ReserveRequest)
 		Reserved:  reserveRequest.Reserved,
 		VendorID:  reserveRequest.VendorID,
 		ProductID: reserveRequest.ProductID,
-		Status:    domain.HISTORY_DRAFT,
+		Status:    domain.TRANSACTION_DRAFT,
 	})
 	if err != nil {
 		return err

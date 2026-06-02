@@ -17,7 +17,7 @@ type Transaction struct {
 type TransactionStatus string
 
 const (
-	HISTORY_DRAFT   TransactionStatus = "DRAFTED"
-	HISTORY_SUCCESS TransactionStatus = "SUCCESS"
-	HISTORY_FAIL    TransactionStatus = "FAIL"
+	TRANSACTION_DRAFT   TransactionStatus = "DRAFTED"
+	TRANSACTION_SUCCESS TransactionStatus = "SUCCESS"
+	TRANSACTION_FAIL    TransactionStatus = "FAIL"
 )

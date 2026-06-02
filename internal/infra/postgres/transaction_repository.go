@@ -42,19 +42,21 @@ func (repo *TransactionRepository) GetByID(ID string) (domain.Transaction, error
 	return repo.toTransactionDomain(transactionModel), nil
 }
 
+func (repo *TransactionRepository) DeleteTransactionsByIDs(IDs ...string) error {
+	err := repo.db.
+		Where("id IN ?", IDs).
+		Delete(&model.TransactionModel{}).Error
+	if err != nil {
+		return convertPostgresErrorToAppError(err)
+	}
+	return nil
+}
+
 func (repo *TransactionRepository) Filter(filter domain.SearchTransaction) ([]domain.Transaction, error) {
 	q := repo.db.Model(&model.TransactionModel{})
 
 	if filter.Activation != nil {
 		q = q.Where("active = ?", *filter.Activation)
-	}
-
-	if filter.PaymentID != "" {
-		q = q.Where("payment_id = ?", filter.PaymentID)
-	}
-
-	if filter.OrderID != "" {
-		q = q.Where("order_id = ?", filter.OrderID)
 	}
 
 	if filter.VendorID != nil {
@@ -83,7 +85,7 @@ func (repo *TransactionRepository) Approve(ID string) error {
 	err := repo.db.Model(&model.TransactionModel{}).
 		Where("id = ?", ID).
 		Updates(map[string]interface{}{
-			"status":     domain.HISTORY_SUCCESS,
+			"status":     domain.TRANSACTION_SUCCESS,
 			"updated_at": gorm.Expr("CURRENT_TIMESTAMP"),
 		}).Error
 	if err != nil {
@@ -99,7 +101,7 @@ func (repo *TransactionRepository) Reject(ID string) error {
 	err := repo.db.Model(&model.TransactionModel{}).
 		Where("id = ?", ID).
 		Updates(map[string]interface{}{
-			"status":     domain.HISTORY_FAIL,
+			"status":     domain.TRANSACTION_FAIL,
 			"updated_at": gorm.Expr("CURRENT_TIMESTAMP"),
 		}).Error
 	if err != nil {

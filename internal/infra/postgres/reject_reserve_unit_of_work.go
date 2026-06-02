@@ -31,7 +31,7 @@ func (iuw *RejectReserveUnitOfWork) RejectReserve(final domain.FinalizeReservati
 	return iuw.inventoryRepo.AcceptReserve(final)
 }
 
-func (iuw *RejectReserveUnitOfWork) RejectHistory(ID string) error {
+func (iuw *RejectReserveUnitOfWork) RejectTransaction(ID string) error {
 	return iuw.transactionRepo.Approve(ID)
 }
 
