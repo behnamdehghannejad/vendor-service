@@ -234,3 +234,70 @@ func TestInventoryRepository_RejectReserve(t *testing.T) {
 		t.Fatalf("expected 20, got %v", updated.Reserved)
 	}
 }
+
+func TestInventoryRepository_UpdateInventoryDiscountPercentages(t *testing.T) {
+	productID, _ := productRepo.Create(domain.Product{})
+	defer productRepo.DeleteProductsByIDs(productID)
+
+	firstVendorID, _ := vendorRepo.Create(domain.Vendor{
+		Code: "1",
+	})
+	defer vendorRepo.DeleteVendorsByIDs(firstVendorID)
+
+	secondVendorID, _ := vendorRepo.Create(domain.Vendor{
+		Code: "2",
+	})
+	defer vendorRepo.DeleteVendorsByIDs(secondVendorID)
+
+	thirdVendorID, _ := vendorRepo.Create(domain.Vendor{
+		Code: "3",
+	})
+	defer vendorRepo.DeleteVendorsByIDs(thirdVendorID)
+
+	inventoryDiscountPercentages := make([]domain.InventoryDiscountPercentage, 0, 3)
+
+	discountPercentage := 3
+
+	for _, inventory := range []domain.Inventory{
+		{ProductID: productID, VendorID: firstVendorID, Quantity: 20},
+		{ProductID: productID, VendorID: secondVendorID, Quantity: 30},
+		{ProductID: productID, VendorID: thirdVendorID, Quantity: 40},
+	} {
+		err := inventoryRepo.Upsert(inventory)
+		if err != nil {
+			t.Fatalf("error creating inventory: %v", err)
+		}
+		defer inventoryRepo.DeleteInventoriesByID(inventory.VendorID, inventory.ProductID)
+
+		inventoryDiscountPercentages = append(
+			inventoryDiscountPercentages,
+			domain.InventoryDiscountPercentage{
+				ProductID:          inventory.ProductID,
+				VendorID:           inventory.VendorID,
+				DiscountPercentage: float64(discountPercentage),
+			},
+		)
+
+		discountPercentage++
+	}
+
+	err := inventoryRepo.UpdateProductDiscountPercentages(inventoryDiscountPercentages)
+	if err != nil {
+		t.Fatalf("error updating discounts: %v", err)
+	}
+
+	for _, expected := range inventoryDiscountPercentages {
+		inventory, err := inventoryRepo.GetInventory(expected.VendorID, expected.ProductID)
+		if err != nil {
+			t.Fatalf("error finding product: %v", err)
+		}
+
+		if inventory.DiscountPercentage != expected.DiscountPercentage {
+			t.Fatalf(
+				"expected %f but got %f",
+				expected.DiscountPercentage,
+				inventory.DiscountPercentage,
+			)
+		}
+	}
+}

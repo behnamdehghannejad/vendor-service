@@ -5,10 +5,11 @@ type ResponseInventories struct {
 }
 
 type ResponseInventory struct {
-	Reserved  int `json:"reserved"`
-	VendorID  int `json:"vendor_id"`
-	ProductID int `json:"product_id"`
-	Quantity  int `json:"quantity"`
+	Reserved           int     `json:"reserved"`
+	VendorID           int     `json:"vendor_id"`
+	ProductID          int     `json:"product_id"`
+	Quantity           int     `json:"quantity"`
+	DiscountPercentage float64 `json:"discount_percentage"`
 }
 
 type RequestUpsertInventory struct {

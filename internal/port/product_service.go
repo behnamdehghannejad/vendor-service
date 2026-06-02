@@ -8,5 +8,4 @@ type ProductService interface {
 	Delete(int) error
 	FindById(int) (domain.Product, error)
 	Filter(domain.SearchProduct) ([]domain.Product, error)
-	UpdateAllProductsDiscountPercentage()
 }

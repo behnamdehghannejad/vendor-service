@@ -8,4 +8,5 @@ type InventoryRepository interface {
 	Filter(domain.SearchInventory) ([]domain.Inventory, error)
 	AcceptReserve(domain.FinalizeReservation) error
 	RejectReserve(domain.FinalizeReservation) error
+	UpdateProductDiscountPercentages([]domain.InventoryDiscountPercentage) error
 }

@@ -9,23 +9,23 @@ import (
 )
 
 type Scheduler struct {
-	productService port.ProductService
-	sch            *gocron.Scheduler
+	inventoryService port.InventoryService
+	sch              *gocron.Scheduler
 }
 
 func New(
-	productService port.ProductService,
+	inventoryService port.InventoryService,
 ) *Scheduler {
 	return &Scheduler{
-		productService: productService,
-		sch:            gocron.NewScheduler(time.UTC),
+		inventoryService: inventoryService,
+		sch:              gocron.NewScheduler(time.UTC),
 	}
 }
 
 func (s *Scheduler) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	s.sch.Cron("*/5 * * * *").Do(s.productService.UpdateAllProductsDiscountPercentage)
+	s.sch.Cron("*/5 * * * *").Do(s.inventoryService.UpdateAllInventoriesDiscountPercentage)
 	s.sch.StartAsync()
 
 	<-done

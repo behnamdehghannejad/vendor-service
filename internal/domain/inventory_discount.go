@@ -1,6 +1,7 @@
 package domain
 
-type ProductDiscountPercentage struct {
+type InventoryDiscountPercentage struct {
 	ProductID          int
+	VendorID           int
 	DiscountPercentage float64
 }
