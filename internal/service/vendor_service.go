@@ -13,7 +13,7 @@ func NewVendorService(repository port.VendorRepository) *VendorService {
 	return &VendorService{repository: repository}
 }
 
-func (s *VendorService) Create(vendor domain.Vendor) error {
+func (s *VendorService) Create(vendor domain.Vendor) (int, error) {
 	return s.repository.Create(vendor)
 }
 
@@ -22,7 +22,7 @@ func (s *VendorService) Update(vendor domain.Vendor) error {
 }
 
 func (s *VendorService) Delete(id int) error {
-	return s.repository.Delete(id)
+	return s.repository.SoftDelete(id)
 }
 
 func (s *VendorService) FindByID(id int) (domain.Vendor, error) {

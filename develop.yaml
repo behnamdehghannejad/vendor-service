@@ -8,5 +8,6 @@ database:
   username: postgres
   password: postgres
   database: vendor
-  sslmode: disable
+  sslmode:
+  database_test: vendor_test
   migrate: true

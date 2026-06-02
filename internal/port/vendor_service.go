@@ -3,7 +3,7 @@ package port
 import "github.com/behnamdehghannejad/vendorservice/internal/domain"
 
 type VendorService interface {
-	Create(domain.Vendor) error
+	Create(domain.Vendor) (int, error)
 	Update(domain.Vendor) error
 	Delete(int) error
 	FindByID(int) (domain.Vendor, error)
