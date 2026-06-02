@@ -3,7 +3,6 @@ package postgres
 import (
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
 	"github.com/behnamdehghannejad/vendorservice/internal/infra/postgres/model"
-	"github.com/behnamdehghannejad/vendorservice/internal/pkg/apperror"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -105,10 +104,17 @@ func (repo *InventoryRepository) AcceptReserve(final domain.FinalizeReservation)
 			"updated_at": gorm.Expr("CURRENT_TIMESTAMP"),
 		}).Error
 	if err != nil {
-		return apperror.Wrap(err).
-			UnExpected().
-			Log().
-			Build()
+		return convertPostgresErrorToAppError(err)
+	}
+	return nil
+}
+
+func (repo *InventoryRepository) DeleteInventoriesByID(vendorID int, productID int) error {
+	err := repo.db.
+		Where("vendor_id = ? AND product_id = ?", vendorID, productID).
+		Delete(&model.InventoryModel{}).Error
+	if err != nil {
+		return convertPostgresErrorToAppError(err)
 	}
 	return nil
 }
@@ -122,10 +128,7 @@ func (repo *InventoryRepository) RejectReserve(final domain.FinalizeReservation)
 			"updated_at": gorm.Expr("CURRENT_TIMESTAMP"),
 		}).Error
 	if err != nil {
-		return apperror.Wrap(err).
-			UnExpected().
-			Log().
-			Build()
+		return convertPostgresErrorToAppError(err)
 	}
 	return nil
 }
