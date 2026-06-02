@@ -17,7 +17,7 @@ func Load() (Config, error) {
 
 	viper.SetConfigName(env)
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("./")
+	viper.AddConfigPath(os.Getenv("CONFIG_PATH"))
 
 	viper.AutomaticEnv()
 

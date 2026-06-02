@@ -38,7 +38,7 @@ func TestVendorRepository_FindByID(t *testing.T) {
 
 	defer vendorRepo.DeleteVendorsByIDs(ID)
 
-	found, err := vendorRepo.FindByID(1)
+	found, err := vendorRepo.FindByID(ID)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -97,7 +97,7 @@ func TestVendorRepository_Update(t *testing.T) {
 		t.Fatalf("update failed: %v", err)
 	}
 
-	updated, err := vendorRepo.FindByID(1)
+	updated, err := vendorRepo.FindByID(ID)
 	if err != nil {
 		t.Fatalf("find failed: %v", err)
 	}
@@ -124,7 +124,7 @@ func TestVendorRepository_SoftDelete(t *testing.T) {
 		t.Fatalf("delete failed: %v", err)
 	}
 
-	found, err := vendorRepo.FindByID(1)
+	found, err := vendorRepo.FindByID(ID)
 	if err != nil {
 		t.Fatalf("find failed: %v", err)
 	}

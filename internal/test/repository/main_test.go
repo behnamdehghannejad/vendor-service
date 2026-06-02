@@ -7,6 +7,7 @@ import (
 
 	"github.com/behnamdehghannejad/vendorservice/internal/infra/postgres"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/config"
+	"github.com/behnamdehghannejad/vendorservice/internal/pkg/log"
 )
 
 var (
@@ -17,6 +18,13 @@ var (
 )
 
 func TestMain(m *testing.M) {
+	os.Setenv("CONFIG_PATH", "../../..")
+
+	err := log.Initialize()
+	if err != nil {
+		os.Exit(1)
+	}
+
 	cfg, err := config.Load()
 	if err != nil {
 		fmt.Printf("error load config %v\n", err)
@@ -24,13 +32,14 @@ func TestMain(m *testing.M) {
 	}
 
 	postgresConfig := postgres.PostgresConfig{
-		Username: cfg.Database.Username,
-		Password: cfg.Database.Password,
-		Database: cfg.Database.DatabaseTest,
-		Host:     cfg.Database.Host,
-		Port:     cfg.Database.Port,
-		Migrate:  cfg.Database.Migrate,
-		SSLMode:  cfg.Database.SSLMode,
+		Username:      cfg.Database.Username,
+		Password:      cfg.Database.Password,
+		Database:      cfg.Database.DatabaseTest,
+		Host:          cfg.Database.Host,
+		Port:          cfg.Database.Port,
+		Migrate:       cfg.Database.Migrate,
+		SSLMode:       cfg.Database.SSLMode,
+		MigrationPath: "../../.././" + cfg.Database.MigrationPath,
 	}
 
 	migrator := postgres.NewMigrator(postgresConfig)

@@ -11,3 +11,4 @@ database:
   sslmode:
   database_test: vendor_test
   migrate: true
+  migration_path: ./internal/infra/postgres/migrations

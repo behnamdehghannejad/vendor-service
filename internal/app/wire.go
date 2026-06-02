@@ -22,6 +22,8 @@ import (
 )
 
 func Run() {
+	os.Setenv("CONFIG_PATH", "./")
+
 	err := log.Initialize()
 	if err != nil {
 		return

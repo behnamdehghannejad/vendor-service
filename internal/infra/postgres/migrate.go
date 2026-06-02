@@ -23,7 +23,7 @@ type Migrator struct {
 
 func NewMigrator(cfg PostgresConfig) *Migrator {
 	migrations := &migrate.FileMigrationSource{
-		Dir: "./internal/infra/postgres/migrations",
+		Dir: cfg.MigrationPath,
 	}
 
 	return &Migrator{
