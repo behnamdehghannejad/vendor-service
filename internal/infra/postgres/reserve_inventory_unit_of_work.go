@@ -17,20 +17,14 @@ type ReserveInventoryUnitOfWork struct {
 }
 
 func NewReserveInventoryUnitOfWork(
-	db *gorm.DB,
+	tx *gorm.DB,
 	ctx context.Context,
-) (*ReserveInventoryUnitOfWork, error) {
-	tx := db.WithContext(ctx).Begin()
-	if tx.Error != nil {
-		return nil, apperror.Wrap(tx.Error).
-			UnExpected().
-			Build()
-	}
+) *ReserveInventoryUnitOfWork {
 	return &ReserveInventoryUnitOfWork{
 		tx:              tx,
 		inventoryRepo:   NewInventoryRepository(tx),
 		transactionRepo: NewTransactionRepository(tx),
-	}, nil
+	}
 }
 
 func (iuw *ReserveInventoryUnitOfWork) IncreaseReserveInventory(requestReserve domain.RequestReserve) error {
