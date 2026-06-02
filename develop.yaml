@@ -8,5 +8,9 @@ database:
   username: postgres
   password: postgres
   database: vendor
-  sslmode: disable
+  sslmode:
+  database_test: vendor_test
   migrate: true
+  migration_path: internal/infra/postgres/migrations
+discount_client:
+  url: localhost:8080/discounts

@@ -9,15 +9,15 @@ type Transaction struct {
 	Reserved  int
 	ProductID int
 	VendorID  int
-	Status    HistoryStatus
+	Status    TransactionStatus
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
-type HistoryStatus string
+type TransactionStatus string
 
 const (
-	HISTORY_DRAFT   HistoryStatus = "DRAFTED"
-	HISTORY_SUCCESS HistoryStatus = "SUCCESS"
-	HISTORY_FAIL    HistoryStatus = "FAIL"
+	TRANSACTION_DRAFT   TransactionStatus = "DRAFTED"
+	TRANSACTION_SUCCESS TransactionStatus = "SUCCESS"
+	TRANSACTION_FAIL    TransactionStatus = "FAIL"
 )

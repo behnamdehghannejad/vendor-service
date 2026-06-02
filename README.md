@@ -392,9 +392,9 @@ PATCH /api/v1/products/{id}
 
 ---
 
-# History APIs
+# Transaction APIs
 
-History records track inventory reservations and status changes.
+Transaction records track inventory reservations and status changes.
 
 ## Search Histories
 
@@ -439,7 +439,7 @@ GET /api/v1/transactions?status=PAID&vendor_id=1
 
 # Status Values
 
-History status supports the following values:
+Transaction status supports the following values:
 
 ```text
 CREATED

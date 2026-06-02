@@ -4,7 +4,7 @@ import "github.com/behnamdehghannejad/vendorservice/internal/domain"
 
 type AcceptInventoryUnitOfWork interface {
 	AcceptReserve(domain.FinalizeReservation) error
-	AcceptHistory(string) error
+	AcceptTransaction(string) error
 	Commit() error
 	Rollback() error
 }

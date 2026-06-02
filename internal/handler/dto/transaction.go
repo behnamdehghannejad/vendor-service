@@ -16,25 +16,25 @@ type TransactionResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type HistoryStatusRequest struct {
+type TransactionStatusRequest struct {
 	Status string `json:"status"`
 }
 
-type HistoryActiveRequest struct {
+type TransactionActiveRequest struct {
 	Active bool `json:"active"`
 }
 
-type CreateHistoryRequest struct {
+type CreateTransactionRequest struct {
 	Quantity  int `json:"quantity"`
 	ProductID int `json:"product_id"`
 	VendorID  int `json:"vendor_id"`
 }
 
-type SearchHistory struct {
-	Activation string                `form:"activation"`
-	VendorID   *int                  `form:"vendor_id" binding:"omitempty,gte=0"`
-	ProductID  *int                  `form:"product_id" binding:"omitempty,gte=0"`
-	Status     *domain.HistoryStatus `form:"status" binding:"omitempty,oneof=CREATED RUNNING PAID READY SENT DELIVERED"`
+type SearchTransaction struct {
+	Activation string                    `form:"activation"`
+	VendorID   *int                      `form:"vendor_id" binding:"omitempty,gte=0"`
+	ProductID  *int                      `form:"product_id" binding:"omitempty,gte=0"`
+	Status     *domain.TransactionStatus `form:"status" binding:"omitempty,oneof=CREATED RUNNING PAID READY SENT DELIVERED"`
 }
 
 type ResponseHistories struct {

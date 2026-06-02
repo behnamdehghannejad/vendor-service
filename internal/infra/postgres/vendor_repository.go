@@ -19,14 +19,14 @@ func NewVendorRepository(db *gorm.DB) *VendorRepository {
 	}
 }
 
-func (repo *VendorRepository) Create(v domain.Vendor) error {
-	entity := repo.toVendorModel(v)
+func (repo *VendorRepository) Create(v domain.Vendor) (int, error) {
+	vendorModel := repo.toVendorModel(v)
 
-	if err := repo.db.Create(&entity).Error; err != nil {
-		return convertPostgresErrorToAppError(err, v)
+	if err := repo.db.Create(&vendorModel).Error; err != nil {
+		return 0, convertPostgresErrorToAppError(err, v)
 	}
 
-	return nil
+	return vendorModel.ID, nil
 }
 
 func (repo *VendorRepository) Update(v domain.Vendor) error {
@@ -39,7 +39,7 @@ func (repo *VendorRepository) Update(v domain.Vendor) error {
 	return nil
 }
 
-func (repo *VendorRepository) Delete(id int) error {
+func (repo *VendorRepository) SoftDelete(id int) error {
 	if err := repo.db.Model(&model.VendorModel{}).
 		Where("id = ?", id).
 		Updates(map[string]any{
@@ -49,6 +49,16 @@ func (repo *VendorRepository) Delete(id int) error {
 		return convertPostgresErrorToAppError(err)
 	}
 
+	return nil
+}
+
+func (repo *VendorRepository) DeleteVendorsByIDs(IDs ...int) error {
+	err := repo.db.
+		Where("id IN ?", IDs).
+		Delete(&model.VendorModel{}).Error
+	if err != nil {
+		return convertPostgresErrorToAppError(err)
+	}
 	return nil
 }
 

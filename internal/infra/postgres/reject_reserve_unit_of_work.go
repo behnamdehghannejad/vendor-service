@@ -17,27 +17,21 @@ type RejectReserveUnitOfWork struct {
 }
 
 func NewRejectReserveUnitOfWork(
-	db *gorm.DB,
+	tx *gorm.DB,
 	ctx context.Context,
-) (*RejectReserveUnitOfWork, error) {
-	tx := db.WithContext(ctx).Begin()
-	if tx.Error != nil {
-		return nil, apperror.Wrap(tx.Error).
-			UnExpected().
-			Build()
-	}
+) *RejectReserveUnitOfWork {
 	return &RejectReserveUnitOfWork{
 		tx:              tx,
 		inventoryRepo:   NewInventoryRepository(tx),
 		transactionRepo: NewTransactionRepository(tx),
-	}, nil
+	}
 }
 
 func (iuw *RejectReserveUnitOfWork) RejectReserve(final domain.FinalizeReservation) error {
 	return iuw.inventoryRepo.AcceptReserve(final)
 }
 
-func (iuw *RejectReserveUnitOfWork) RejectHistory(ID string) error {
+func (iuw *RejectReserveUnitOfWork) RejectTransaction(ID string) error {
 	return iuw.transactionRepo.Approve(ID)
 }
 

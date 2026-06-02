@@ -39,7 +39,7 @@ func (h *Vendor) Create(c *gin.Context) {
 		return
 	}
 
-	err := h.service.Create(h.toVendorDomain(req))
+	_, err := h.service.Create(h.toVendorDomain(req))
 	if err != nil {
 		responseError, status := httperror.Handle(err)
 		c.JSON(status, responseError)

@@ -3,8 +3,10 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
+	"path/filepath"
 
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/apperror"
+	"github.com/behnamdehghannejad/vendorservice/internal/pkg/utils"
 
 	_ "github.com/lib/pq"
 
@@ -22,8 +24,11 @@ type Migrator struct {
 }
 
 func NewMigrator(cfg PostgresConfig) *Migrator {
+	root := utils.GetRootPath()
+
+	migrationPath := filepath.Join(root, cfg.MigrationPath)
 	migrations := &migrate.FileMigrationSource{
-		Dir: "./internal/infra/postgres/migrations",
+		Dir: migrationPath,
 	}
 
 	return &Migrator{

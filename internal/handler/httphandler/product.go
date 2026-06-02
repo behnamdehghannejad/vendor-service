@@ -32,7 +32,7 @@ func (h *Product) Create(c *gin.Context) {
 		return
 	}
 
-	err := h.productService.Create(domain.Product{
+	_, err := h.productService.Create(domain.Product{
 		Name:        req.Name,
 		Description: req.Description,
 		Active:      true,
@@ -119,11 +119,12 @@ func (h *Product) serializeProducts(products []domain.Product) dto.ProductsRespo
 
 func (h *Product) serializeProduct(product domain.Product) dto.ProductResponse {
 	return dto.ProductResponse{
-		ID:          product.ID,
-		Name:        product.Name,
-		Description: product.Description,
-		Active:      product.Active,
-		CreatedAt:   product.CreatedAt,
-		UpdatedAt:   product.UpdatedAt,
+		ID:                 product.ID,
+		Name:               product.Name,
+		Description:        product.Description,
+		Active:             product.Active,
+		DiscountPercentage: product.DiscountPercentage,
+		CreatedAt:          product.CreatedAt,
+		UpdatedAt:          product.UpdatedAt,
 	}
 }

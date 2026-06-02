@@ -6,27 +6,36 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"sync"
 	"time"
 
+	discount "github.com/behnamdehghannejad/vendorservice/internal/adapter/discount_client"
 	"github.com/behnamdehghannejad/vendorservice/internal/handler/httphandler"
 	"github.com/behnamdehghannejad/vendorservice/internal/infra/postgres"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/apperror"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/config"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/log"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/metrics"
+	"github.com/behnamdehghannejad/vendorservice/internal/pkg/utils"
 	"github.com/behnamdehghannejad/vendorservice/internal/port"
+	"github.com/behnamdehghannejad/vendorservice/internal/scheduler"
 	"github.com/behnamdehghannejad/vendorservice/internal/service"
 	"github.com/behnamdehghannejad/vendorservice/internal/validator"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func Run() {
-	err := log.Initialize()
-	if err != nil {
+func RunHttp() {
+	if err := utils.SetRootPath("./"); err != nil {
 		return
 	}
 
+	fileLog := filepath.Join(utils.GetRootPath(), "application.log")
+	err := log.Initialize(fileLog)
+	if err != nil {
+		return
+	}
 	cfg, err := config.Load()
 	if err != nil {
 		return
@@ -37,7 +46,7 @@ func Run() {
 		return
 	}
 
-	transactionService, vendorService, productService, inventoryService, err := registerServices(cfg.Database)
+	transactionService, vendorService, productService, inventoryService, err := registerServices(cfg)
 	if err != nil {
 		return
 	}
@@ -66,22 +75,63 @@ func Run() {
 	shutdownServer(server)
 }
 
+func RunScheduler() {
+	os.Setenv("CONFIG_PATH", "./")
+
+	fileLog := filepath.Join(utils.GetRootPath(), "application.log")
+	err := log.Initialize(fileLog)
+	if err != nil {
+		return
+	}
+
+	cfg, err := config.Load()
+	if err != nil {
+		return
+	}
+
+	if err := migrate(cfg.Database); err != nil {
+		return
+	}
+
+	_, _, productService, _, err := registerServices(cfg)
+	if err != nil {
+		return
+	}
+
+	done := make(chan struct{})
+
+	var wg sync.WaitGroup
+
+	go func() {
+		wg.Add(1)
+		scheduler := scheduler.New(productService)
+		scheduler.Start(done, &wg)
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	done <- struct{}{}
+	wg.Wait()
+}
+
 func migrate(cfg postgres.PostgresConfig) error {
 	migrator := postgres.NewMigrator(cfg)
+
 	if err := migrator.UP(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func registerServices(cfg postgres.PostgresConfig) (
-	port.HistoryService,
+func registerServices(cfg config.Config) (
+	port.TransactionService,
 	port.VendorService,
 	port.ProductService,
 	port.InventoryService,
 	error,
 ) {
-	db, err := postgres.New(cfg)
+	db, err := postgres.New(cfg.Database)
 	if err != nil {
 		return nil, nil, nil, nil, apperror.Wrap(err).UnExpected().DebuggingError().Build()
 	}
@@ -93,9 +143,12 @@ func registerServices(cfg postgres.PostgresConfig) (
 
 	unitOfWorkFactory := postgres.NewUnitOfWorkFactory(db)
 
-	transactionService := service.NewHistoryService(transactionRepository)
+	transactionService := service.NewTransactionService(transactionRepository)
 	vendorService := service.NewVendorService(vendorRepository)
-	productService := service.NewProductService(productRepository)
+	productService := service.NewProductService(
+		productRepository,
+		discount.New(cfg.DiscountClient.URL),
+	)
 	inventoryService := service.NewInventoryService(inventoryRepository, unitOfWorkFactory)
 
 	return transactionService, vendorService, productService, inventoryService, nil
@@ -127,7 +180,7 @@ func shutdownServer(server *http.Server) {
 
 func createServer(
 	cfg httphandler.HttpConfig,
-	transactionService port.HistoryService,
+	transactionService port.TransactionService,
 	vendorService port.VendorService,
 	productService port.ProductService,
 	inventoryService port.InventoryService,
@@ -165,12 +218,12 @@ func createServer(
 }
 
 func registerHandlers(
-	transactionService port.HistoryService,
+	transactionService port.TransactionService,
 	inventoryService port.InventoryService,
 	vendorService port.VendorService,
 	productService port.ProductService,
 ) (
-	*httphandler.History,
+	*httphandler.Transaction,
 	*httphandler.Vendor,
 	*httphandler.Product,
 	*httphandler.Inventory,
@@ -199,7 +252,7 @@ func registerHandlers(
 
 func registerRoutes(
 	router *gin.Engine,
-	transactionHandler *httphandler.History,
+	transactionHandler *httphandler.Transaction,
 	vendorHandler *httphandler.Vendor,
 	productHandler *httphandler.Product,
 	inventoryHandler *httphandler.Inventory,

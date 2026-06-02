@@ -4,7 +4,7 @@ import (
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
 )
 
-type HistoryService interface {
+type TransactionService interface {
 	Update(domain.Transaction) error
 	Search(domain.SearchTransaction) ([]domain.Transaction, error)
 }

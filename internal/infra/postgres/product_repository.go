@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
@@ -18,14 +19,14 @@ func NewProductRepository(db *gorm.DB) *ProductRepository {
 	}
 }
 
-func (repo *ProductRepository) Create(product domain.Product) error {
-	entity := repo.toProductModel(product)
+func (repo *ProductRepository) Create(product domain.Product) (int, error) {
+	productModel := repo.toProductModel(product)
 
-	if err := repo.db.Create(entity).Error; err != nil {
-		return convertPostgresErrorToAppError(err, product)
+	if err := repo.db.Create(productModel).Error; err != nil {
+		return 0, convertPostgresErrorToAppError(err, product)
 	}
 
-	return nil
+	return productModel.ID, nil
 }
 
 func (repo *ProductRepository) Update(product domain.Product) error {
@@ -38,7 +39,7 @@ func (repo *ProductRepository) Update(product domain.Product) error {
 	return nil
 }
 
-func (repo *ProductRepository) Delete(id int) error {
+func (repo *ProductRepository) SoftDelete(id int) error {
 	if err := repo.db.Model(&model.ProductModel{}).
 		Where("id = ?", id).
 		Updates(map[string]any{
@@ -48,6 +49,16 @@ func (repo *ProductRepository) Delete(id int) error {
 		return convertPostgresErrorToAppError(err, id)
 	}
 
+	return nil
+}
+
+func (repo *ProductRepository) DeleteProductsByIDs(IDs ...int) error {
+	err := repo.db.
+		Where("id IN ?", IDs).
+		Delete(&model.ProductModel{}).Error
+	if err != nil {
+		return convertPostgresErrorToAppError(err)
+	}
 	return nil
 }
 
@@ -80,25 +91,58 @@ func (repo *ProductRepository) FindById(id int) (domain.Product, error) {
 	return repo.toProductDomain(entity), nil
 }
 
+func (repo *ProductRepository) UpdateProductDiscountPercentages(
+	items []domain.ProductDiscountPercentage,
+) error {
+	if len(items) == 0 {
+		return nil
+	}
+
+	query := "UPDATE products SET discount_percentage = CASE id "
+	ids := make([]int, 0, len(items))
+
+	for _, item := range items {
+		query += fmt.Sprintf(
+			"WHEN %d THEN %f ",
+			item.ProductID,
+			item.DiscountPercentage,
+		)
+		ids = append(ids, item.ProductID)
+	}
+
+	query += "END WHERE id IN ?"
+
+	err := repo.db.
+		Table("products").
+		Exec(query, ids).
+		Error
+	if err != nil {
+		return convertPostgresErrorToAppError(err)
+	}
+	return nil
+}
+
 func (repo *ProductRepository) toProductModel(product domain.Product) *model.ProductModel {
 	return &model.ProductModel{
-		ID:          product.ID,
-		Name:        product.Name,
-		Description: product.Description,
-		Active:      product.Active,
-		CreatedAt:   product.CreatedAt,
-		UpdatedAt:   product.UpdatedAt,
+		ID:                 product.ID,
+		Name:               product.Name,
+		Description:        product.Description,
+		DiscountPercentage: product.DiscountPercentage,
+		Active:             product.Active,
+		CreatedAt:          product.CreatedAt,
+		UpdatedAt:          product.UpdatedAt,
 	}
 }
 
 func (repo *ProductRepository) toProductDomain(product model.ProductModel) domain.Product {
 	return domain.Product{
-		ID:          product.ID,
-		Name:        product.Name,
-		Description: product.Description,
-		Active:      product.Active,
-		CreatedAt:   product.CreatedAt,
-		UpdatedAt:   product.UpdatedAt,
+		ID:                 product.ID,
+		Name:               product.Name,
+		Description:        product.Description,
+		DiscountPercentage: product.DiscountPercentage,
+		Active:             product.Active,
+		CreatedAt:          product.CreatedAt,
+		UpdatedAt:          product.UpdatedAt,
 	}
 }
 

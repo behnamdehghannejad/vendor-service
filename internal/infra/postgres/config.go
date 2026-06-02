@@ -1,11 +1,13 @@
 package postgres
 
 type PostgresConfig struct {
-	Username string
-	Password string
-	Database string
-	Host     string
-	Port     string
-	SSLMode  string
-	Migrate  bool
+	MigrationPath string `mapstructure:"migration_path"`
+	Username      string `mapstructure:"username"`
+	Password      string `mapstructure:"password"`
+	Database      string `mapstructure:"database"`
+	DatabaseTest  string `mapstructure:"database_test"`
+	Host          string `mapstructure:"host"`
+	Port          string `mapstructure:"port"`
+	SSLMode       string `mapstructure:"sslmode"`
+	Migrate       bool   `mapstructure:"migrate"`
 }
