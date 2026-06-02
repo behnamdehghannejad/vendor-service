@@ -32,7 +32,7 @@ func (h *Product) Create(c *gin.Context) {
 		return
 	}
 
-	err := h.productService.Create(domain.Product{
+	_, err := h.productService.Create(domain.Product{
 		Name:        req.Name,
 		Description: req.Description,
 		Active:      true,

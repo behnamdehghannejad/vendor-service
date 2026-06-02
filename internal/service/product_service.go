@@ -13,7 +13,7 @@ func NewProductService(repository port.ProductRepository) *ProductService {
 	return &ProductService{repository: repository}
 }
 
-func (s *ProductService) Create(product domain.Product) error {
+func (s *ProductService) Create(product domain.Product) (int, error) {
 	return s.repository.Create(product)
 }
 
@@ -22,7 +22,7 @@ func (s *ProductService) Update(product domain.Product) error {
 }
 
 func (s *ProductService) Delete(id int) error {
-	return s.repository.Delete(id)
+	return s.repository.SoftDelete(id)
 }
 
 func (s *ProductService) FindById(id int) (domain.Product, error) {

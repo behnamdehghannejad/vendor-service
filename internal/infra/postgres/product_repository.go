@@ -18,14 +18,14 @@ func NewProductRepository(db *gorm.DB) *ProductRepository {
 	}
 }
 
-func (repo *ProductRepository) Create(product domain.Product) error {
-	entity := repo.toProductModel(product)
+func (repo *ProductRepository) Create(product domain.Product) (int, error) {
+	productModel := repo.toProductModel(product)
 
-	if err := repo.db.Create(entity).Error; err != nil {
-		return convertPostgresErrorToAppError(err, product)
+	if err := repo.db.Create(productModel).Error; err != nil {
+		return 0, convertPostgresErrorToAppError(err, product)
 	}
 
-	return nil
+	return productModel.ID, nil
 }
 
 func (repo *ProductRepository) Update(product domain.Product) error {
@@ -38,7 +38,7 @@ func (repo *ProductRepository) Update(product domain.Product) error {
 	return nil
 }
 
-func (repo *ProductRepository) Delete(id int) error {
+func (repo *ProductRepository) SoftDelete(id int) error {
 	if err := repo.db.Model(&model.ProductModel{}).
 		Where("id = ?", id).
 		Updates(map[string]any{
@@ -48,6 +48,16 @@ func (repo *ProductRepository) Delete(id int) error {
 		return convertPostgresErrorToAppError(err, id)
 	}
 
+	return nil
+}
+
+func (repo *ProductRepository) DeleteProductsByIDs(IDs ...int) error {
+	err := repo.db.
+		Where("id IN ?", IDs).
+		Delete(&model.ProductModel{}).Error
+	if err != nil {
+		return convertPostgresErrorToAppError(err)
+	}
 	return nil
 }
 
