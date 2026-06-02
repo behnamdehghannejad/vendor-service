@@ -6,11 +6,18 @@ import (
 )
 
 type ProductService struct {
-	repository port.ProductRepository
+	repository     port.ProductRepository
+	discountClient port.DiscountClient
 }
 
-func NewProductService(repository port.ProductRepository) *ProductService {
-	return &ProductService{repository: repository}
+func NewProductService(
+	repository port.ProductRepository,
+	discountClient port.DiscountClient,
+) *ProductService {
+	return &ProductService{
+		repository:     repository,
+		discountClient: discountClient,
+	}
 }
 
 func (s *ProductService) Create(product domain.Product) (int, error) {
@@ -33,11 +40,32 @@ func (s *ProductService) Filter(filter domain.SearchProduct) ([]domain.Product, 
 	return s.repository.Filter(filter)
 }
 
-func (service *ProductService) IsActive(id int) error {
-	product, err := service.FindById(id)
+func (s *ProductService) IsActive(id int) error {
+	product, err := s.FindById(id)
 	if err != nil {
 		return err
 	}
 
 	return domain.IsActiveProduct(product.Active)
+}
+
+func (s *ProductService) UpdateAllProductsDiscountPercentage() {
+	products, err := s.repository.Filter(domain.SearchProduct{})
+	if err != nil {
+		return
+	}
+
+	productDiscountPercentages := s.discountClient.GetDiscountPercentageProducts(
+		s.getProductIDs(products),
+	)
+
+	s.repository.UpdateProductDiscountPercentages(productDiscountPercentages)
+}
+
+func (*ProductService) getProductIDs(products []domain.Product) []int {
+	IDs := make([]int, 0, len(products))
+	for _, product := range products {
+		IDs = append(IDs, product.ID)
+	}
+	return IDs
 }

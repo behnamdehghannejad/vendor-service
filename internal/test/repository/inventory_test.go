@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
@@ -12,6 +13,7 @@ func TestInventoryRepository_Upsert_Update(t *testing.T) {
 	vendorID, _ := vendorRepo.Create(domain.Vendor{})
 	defer vendorRepo.DeleteVendorsByIDs(vendorID)
 
+	fmt.Println(productID, vendorID)
 	inv := domain.Inventory{
 		VendorID:  vendorID,
 		ProductID: productID,
