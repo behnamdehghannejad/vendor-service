@@ -158,9 +158,10 @@ func (i *Inventory) serializeInventories(inventories []domain.Inventory) []dto.R
 
 func (i *Inventory) serializeInventory(inventory domain.Inventory) dto.ResponseInventory {
 	return dto.ResponseInventory{
-		VendorID:  inventory.VendorID,
-		ProductID: inventory.ProductID,
-		Quantity:  inventory.Quantity,
-		Reserved:  inventory.Reserved,
+		VendorID:           inventory.VendorID,
+		ProductID:          inventory.ProductID,
+		Quantity:           inventory.Quantity,
+		DiscountPercentage: inventory.DiscountPercentage,
+		Reserved:           inventory.Reserved,
 	}
 }

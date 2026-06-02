@@ -12,11 +12,17 @@ import (
 
 type InventoryService struct {
 	repository        port.InventoryRepository
+	discountClient    port.DiscountClient
 	unitOfWorkFactory port.UnitOfWorkFactor
 }
 
-func NewInventoryService(repository port.InventoryRepository, unitOfWorkFactor port.UnitOfWorkFactor) *InventoryService {
+func NewInventoryService(
+	repository port.InventoryRepository,
+	unitOfWorkFactor port.UnitOfWorkFactor,
+	discountClient port.DiscountClient,
+) *InventoryService {
 	return &InventoryService{
+		discountClient:    discountClient,
 		repository:        repository,
 		unitOfWorkFactory: unitOfWorkFactor,
 	}
@@ -107,4 +113,28 @@ func (s *InventoryService) ReserveQuantity(reserveRequest domain.ReserveRequest)
 		return err
 	}
 	return nil
+}
+
+func (s *InventoryService) UpdateAllInventoriesDiscountPercentage() {
+	inventories, err := s.repository.Filter(domain.SearchInventory{})
+	if err != nil {
+		return
+	}
+
+	productDiscountPercentages := s.discountClient.GetDiscountPercentageProducts(
+		s.getInventoryKeys(inventories),
+	)
+
+	s.repository.UpdateProductDiscountPercentages(productDiscountPercentages)
+}
+
+func (*InventoryService) getInventoryKeys(inventories []domain.Inventory) []domain.InventoryIdentity {
+	inventoryKeys := make([]domain.InventoryIdentity, 0, len(inventories))
+	for _, inventory := range inventories {
+		inventoryKeys = append(inventoryKeys, domain.InventoryIdentity{
+			ProductID: inventory.ProductID,
+			VendorID:  inventory.VendorID,
+		})
+	}
+	return inventoryKeys
 }

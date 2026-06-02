@@ -1,6 +1,9 @@
 package postgres
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
 	"github.com/behnamdehghannejad/vendorservice/internal/infra/postgres/model"
 
@@ -119,6 +122,53 @@ func (repo *InventoryRepository) DeleteInventoriesByID(vendorID int, productID i
 	return nil
 }
 
+func (repo *InventoryRepository) UpdateProductDiscountPercentages(
+	items []domain.InventoryDiscountPercentage,
+) error {
+	if len(items) == 0 {
+		return nil
+	}
+
+	var (
+		caseStmt strings.Builder
+		whereIDs []string
+		args     []interface{}
+	)
+
+	caseStmt.WriteString("CASE ")
+
+	for _, item := range items {
+		caseStmt.WriteString(
+			"WHEN vendor_id = ? AND product_id = ? THEN ? ",
+		)
+
+		args = append(
+			args,
+			item.VendorID,
+			item.ProductID,
+			item.DiscountPercentage,
+		)
+
+		whereIDs = append(
+			whereIDs,
+			fmt.Sprintf("(%d,%d)", item.VendorID, item.ProductID),
+		)
+	}
+
+	caseStmt.WriteString("ELSE discount_percentage END")
+
+	query := fmt.Sprintf(`
+		UPDATE inventories
+		SET discount_percentage = %s
+		WHERE (vendor_id, product_id) IN (%s)
+	`,
+		caseStmt.String(),
+		strings.Join(whereIDs, ","),
+	)
+
+	return repo.db.Exec(query, args...).Error
+}
+
 func (repo *InventoryRepository) RejectReserve(final domain.FinalizeReservation) error {
 	err := repo.db.Model(&model.InventoryModel{}).
 		Where("vendor_id = ? AND product_id = ?", final.VendorID, final.ProductID).
@@ -143,20 +193,22 @@ func (repo *InventoryRepository) toInventoryDomains(inventoryModels []model.Inve
 
 func (repo *InventoryRepository) toInventoryModel(inventory domain.Inventory) model.InventoryModel {
 	return model.InventoryModel{
-		ProductID: inventory.ProductID,
-		VendorID:  inventory.VendorID,
-		Quantity:  inventory.Quantity,
-		Reserved:  inventory.Reserved,
-		V:         inventory.V,
+		ProductID:          inventory.ProductID,
+		VendorID:           inventory.VendorID,
+		Quantity:           inventory.Quantity,
+		Reserved:           inventory.Reserved,
+		DiscountPercentage: inventory.DiscountPercentage,
+		V:                  inventory.V,
 	}
 }
 
 func (repo *InventoryRepository) toInventoryDomain(inventoryModel model.InventoryModel) domain.Inventory {
 	return domain.Inventory{
-		VendorID:  inventoryModel.VendorID,
-		ProductID: inventoryModel.ProductID,
-		Quantity:  inventoryModel.Quantity,
-		Reserved:  inventoryModel.Reserved,
-		V:         inventoryModel.V,
+		VendorID:           inventoryModel.VendorID,
+		ProductID:          inventoryModel.ProductID,
+		Quantity:           inventoryModel.Quantity,
+		Reserved:           inventoryModel.Reserved,
+		DiscountPercentage: inventoryModel.DiscountPercentage,
+		V:                  inventoryModel.V,
 	}
 }

@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
@@ -91,58 +90,25 @@ func (repo *ProductRepository) FindById(id int) (domain.Product, error) {
 	return repo.toProductDomain(entity), nil
 }
 
-func (repo *ProductRepository) UpdateProductDiscountPercentages(
-	items []domain.ProductDiscountPercentage,
-) error {
-	if len(items) == 0 {
-		return nil
-	}
-
-	query := "UPDATE products SET discount_percentage = CASE id "
-	ids := make([]int, 0, len(items))
-
-	for _, item := range items {
-		query += fmt.Sprintf(
-			"WHEN %d THEN %f ",
-			item.ProductID,
-			item.DiscountPercentage,
-		)
-		ids = append(ids, item.ProductID)
-	}
-
-	query += "END WHERE id IN ?"
-
-	err := repo.db.
-		Table("products").
-		Exec(query, ids).
-		Error
-	if err != nil {
-		return convertPostgresErrorToAppError(err)
-	}
-	return nil
-}
-
 func (repo *ProductRepository) toProductModel(product domain.Product) *model.ProductModel {
 	return &model.ProductModel{
-		ID:                 product.ID,
-		Name:               product.Name,
-		Description:        product.Description,
-		DiscountPercentage: product.DiscountPercentage,
-		Active:             product.Active,
-		CreatedAt:          product.CreatedAt,
-		UpdatedAt:          product.UpdatedAt,
+		ID:          product.ID,
+		Name:        product.Name,
+		Description: product.Description,
+		Active:      product.Active,
+		CreatedAt:   product.CreatedAt,
+		UpdatedAt:   product.UpdatedAt,
 	}
 }
 
 func (repo *ProductRepository) toProductDomain(product model.ProductModel) domain.Product {
 	return domain.Product{
-		ID:                 product.ID,
-		Name:               product.Name,
-		Description:        product.Description,
-		DiscountPercentage: product.DiscountPercentage,
-		Active:             product.Active,
-		CreatedAt:          product.CreatedAt,
-		UpdatedAt:          product.UpdatedAt,
+		ID:          product.ID,
+		Name:        product.Name,
+		Description: product.Description,
+		Active:      product.Active,
+		CreatedAt:   product.CreatedAt,
+		UpdatedAt:   product.UpdatedAt,
 	}
 }
 

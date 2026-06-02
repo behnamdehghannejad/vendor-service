@@ -7,4 +7,5 @@ type InventoryService interface {
 	FindInventory(int, int) (domain.Inventory, error)
 	Upsert(domain.Inventory) error
 	Search(domain.SearchInventory) ([]domain.Inventory, error)
+	UpdateAllInventoriesDiscountPercentage()
 }

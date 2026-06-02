@@ -6,17 +6,14 @@ import (
 )
 
 type ProductService struct {
-	repository     port.ProductRepository
-	discountClient port.DiscountClient
+	repository port.ProductRepository
 }
 
 func NewProductService(
 	repository port.ProductRepository,
-	discountClient port.DiscountClient,
 ) *ProductService {
 	return &ProductService{
-		repository:     repository,
-		discountClient: discountClient,
+		repository: repository,
 	}
 }
 
@@ -47,19 +44,6 @@ func (s *ProductService) IsActive(id int) error {
 	}
 
 	return domain.IsActiveProduct(product.Active)
-}
-
-func (s *ProductService) UpdateAllProductsDiscountPercentage() {
-	products, err := s.repository.Filter(domain.SearchProduct{})
-	if err != nil {
-		return
-	}
-
-	productDiscountPercentages := s.discountClient.GetDiscountPercentageProducts(
-		s.getProductIDs(products),
-	)
-
-	s.repository.UpdateProductDiscountPercentages(productDiscountPercentages)
 }
 
 func (*ProductService) getProductIDs(products []domain.Product) []int {

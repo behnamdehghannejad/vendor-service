@@ -93,7 +93,7 @@ func RunScheduler() {
 		return
 	}
 
-	_, _, productService, _, err := registerServices(cfg)
+	_, _, _, inventoryService, err := registerServices(cfg)
 	if err != nil {
 		return
 	}
@@ -104,7 +104,7 @@ func RunScheduler() {
 
 	go func() {
 		wg.Add(1)
-		scheduler := scheduler.New(productService)
+		scheduler := scheduler.New(inventoryService)
 		scheduler.Start(done, &wg)
 	}()
 
@@ -145,11 +145,12 @@ func registerServices(cfg config.Config) (
 
 	transactionService := service.NewTransactionService(transactionRepository)
 	vendorService := service.NewVendorService(vendorRepository)
-	productService := service.NewProductService(
-		productRepository,
+	productService := service.NewProductService(productRepository)
+	inventoryService := service.NewInventoryService(
+		inventoryRepository,
+		unitOfWorkFactory,
 		discount.New(cfg.DiscountClient.URL),
 	)
-	inventoryService := service.NewInventoryService(inventoryRepository, unitOfWorkFactory)
 
 	return transactionService, vendorService, productService, inventoryService, nil
 }

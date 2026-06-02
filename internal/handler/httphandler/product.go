@@ -119,12 +119,11 @@ func (h *Product) serializeProducts(products []domain.Product) dto.ProductsRespo
 
 func (h *Product) serializeProduct(product domain.Product) dto.ProductResponse {
 	return dto.ProductResponse{
-		ID:                 product.ID,
-		Name:               product.Name,
-		Description:        product.Description,
-		Active:             product.Active,
-		DiscountPercentage: product.DiscountPercentage,
-		CreatedAt:          product.CreatedAt,
-		UpdatedAt:          product.UpdatedAt,
+		ID:          product.ID,
+		Name:        product.Name,
+		Description: product.Description,
+		Active:      product.Active,
+		CreatedAt:   product.CreatedAt,
+		UpdatedAt:   product.UpdatedAt,
 	}
 }
