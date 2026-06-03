@@ -93,6 +93,8 @@ GET /api/v1/inventories?vendor_id=1
     {
       "vendor_id": 1,
       "product_id": 100,
+      "price": 100,
+      "discount_percentage": 25,
       "quantity": 500,
       "reserved": 50
     }
@@ -122,6 +124,8 @@ GET /api/v1/inventories/1_100
 {
   "vendor_id": 1,
   "product_id": 100,
+  "price": 100,
+  "discount_percentage": 25,
   "quantity": 500,
   "reserved": 50
 }
