@@ -3,8 +3,8 @@ package httphandler
 import (
 	"net/http"
 
+	"github.com/behnamdehghannejad/vendorservice/internal/adapter/handler/dto"
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
-	"github.com/behnamdehghannejad/vendorservice/internal/handler/dto"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/httperror"
 	"github.com/behnamdehghannejad/vendorservice/internal/port"
 	"github.com/gin-gonic/gin"

@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/behnamdehghannejad/vendorservice/internal/adapter/handler/dto"
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
-	"github.com/behnamdehghannejad/vendorservice/internal/handler/dto"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/httperror"
 	"github.com/behnamdehghannejad/vendorservice/internal/port"
 	"github.com/behnamdehghannejad/vendorservice/internal/validator"

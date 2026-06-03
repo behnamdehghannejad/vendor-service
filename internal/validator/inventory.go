@@ -1,7 +1,7 @@
 package validator
 
 import (
-	"github.com/behnamdehghannejad/vendorservice/internal/handler/dto"
+	"github.com/behnamdehghannejad/vendorservice/internal/adapter/handler/dto"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/apperror"
 	"github.com/behnamdehghannejad/vendorservice/internal/port"
 	validation "github.com/go-ozzo/ozzo-validation"

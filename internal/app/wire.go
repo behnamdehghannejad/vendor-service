@@ -11,7 +11,7 @@ import (
 	"time"
 
 	discount "github.com/behnamdehghannejad/vendorservice/internal/adapter/discount_client"
-	"github.com/behnamdehghannejad/vendorservice/internal/handler/httphandler"
+	"github.com/behnamdehghannejad/vendorservice/internal/adapter/handler/httphandler"
 	"github.com/behnamdehghannejad/vendorservice/internal/infra/postgres"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/apperror"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/config"
