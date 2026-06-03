@@ -36,20 +36,3 @@ func (s *ProductService) FindById(id int) (domain.Product, error) {
 func (s *ProductService) Filter(filter domain.SearchProduct) ([]domain.Product, error) {
 	return s.repository.Filter(filter)
 }
-
-func (s *ProductService) IsActive(id int) error {
-	product, err := s.FindById(id)
-	if err != nil {
-		return err
-	}
-
-	return domain.IsActiveProduct(product.Active)
-}
-
-func (*ProductService) getProductIDs(products []domain.Product) []int {
-	IDs := make([]int, 0, len(products))
-	for _, product := range products {
-		IDs = append(IDs, product.ID)
-	}
-	return IDs
-}
