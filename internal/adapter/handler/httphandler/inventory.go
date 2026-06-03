@@ -7,6 +7,7 @@ import (
 
 	"github.com/behnamdehghannejad/vendorservice/internal/adapter/handler/dto"
 	"github.com/behnamdehghannejad/vendorservice/internal/domain"
+	"github.com/behnamdehghannejad/vendorservice/internal/pkg/apperror"
 	"github.com/behnamdehghannejad/vendorservice/internal/pkg/httperror"
 	"github.com/behnamdehghannejad/vendorservice/internal/port"
 	"github.com/behnamdehghannejad/vendorservice/internal/validator"
@@ -132,7 +133,13 @@ func (i *Inventory) Reserve(c *gin.Context) {
 }
 
 func (i *Inventory) GetIDs(c *gin.Context) (int, int, error) {
-	ids := strings.Split(c.Param("vpIDs"), "-")
+	ids := strings.Split(c.Param("vpIDs"), "_")
+	if len(ids) != 2 {
+		return 0, 0, apperror.
+			WithoutParentError().
+			BadRequest().
+			Build()
+	}
 	err := i.validator.ValidateIDs(ids[0], ids[1])
 	if err != nil {
 		return 0, 0, err

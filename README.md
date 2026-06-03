@@ -53,13 +53,13 @@ GET /metrics
 Inventory resources are identified using:
 
 ```text
-{vendorID}-{productID}
+{vendorID}_{productID}
 ```
 
 Example:
 
 ```text
-1-100
+1_100
 ```
 
 ---
@@ -107,13 +107,13 @@ GET /api/v1/inventories?vendor_id=1
 Returns a single inventory record.
 
 ```http
-GET /api/v1/inventories/{vendorID}-{productID}
+GET /api/v1/inventories/{vendorID}_{productID}
 ```
 
 ### Example
 
 ```http
-GET /api/v1/inventories/1-100
+GET /api/v1/inventories/1_100
 ```
 
 ### Response
@@ -134,7 +134,7 @@ GET /api/v1/inventories/1-100
 Creates or updates inventory quantity.
 
 ```http
-PUT /api/v1/inventories/{vendorID}-{productID}
+PUT /api/v1/inventories/{vendorID}_{productID}
 ```
 
 ### Request Body
@@ -158,7 +158,7 @@ PUT /api/v1/inventories/{vendorID}-{productID}
 Reserves inventory for a request.
 
 ```http
-POST /api/v1/inventories/{vendorID}-{productID}/reserve
+POST /api/v1/inventories/{vendorID}_{productID}/reserve
 ```
 
 ### Request Body
