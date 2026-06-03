@@ -30,6 +30,7 @@ func (repo *InventoryRepository) Upsert(inventory domain.Inventory) error {
 		},
 		DoUpdates: clause.Assignments(map[string]interface{}{
 			"quantity": gorm.Expr("EXCLUDED.quantity"),
+			"price":    gorm.Expr("EXCLUDED.price"),
 			"version":  gorm.Expr("inventories.version + 1"),
 		}),
 		Where: clause.Where{
@@ -199,6 +200,7 @@ func (repo *InventoryRepository) toInventoryModel(inventory domain.Inventory) mo
 		Reserved:           inventory.Reserved,
 		DiscountPercentage: inventory.DiscountPercentage,
 		V:                  inventory.V,
+		Price:              inventory.Price,
 	}
 }
 
@@ -209,6 +211,7 @@ func (repo *InventoryRepository) toInventoryDomain(inventoryModel model.Inventor
 		Quantity:           inventoryModel.Quantity,
 		Reserved:           inventoryModel.Reserved,
 		DiscountPercentage: inventoryModel.DiscountPercentage,
+		Price:              inventoryModel.Price,
 		V:                  inventoryModel.V,
 	}
 }

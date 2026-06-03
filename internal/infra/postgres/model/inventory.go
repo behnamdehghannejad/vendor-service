@@ -6,6 +6,7 @@ type InventoryModel struct {
 	Quantity           int     `gorm:"column:quantity"`
 	DiscountPercentage float64 `gorm:"column:discount_percentage"`
 	Reserved           int     `gorm:"column:reserved"`
+	Price              int     `gorm:"column:price"`
 	V                  int     `gorm:"column:version"`
 }
 

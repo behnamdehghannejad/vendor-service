@@ -10,10 +10,12 @@ type ResponseInventory struct {
 	ProductID          int     `json:"product_id"`
 	Quantity           int     `json:"quantity"`
 	DiscountPercentage float64 `json:"discount_percentage"`
+	Price              int     `json:"price"`
 }
 
 type RequestUpsertInventory struct {
 	Quantity int `json:"quantity"`
+	Price    int `json:"price"`
 }
 
 type RequestReserve struct {

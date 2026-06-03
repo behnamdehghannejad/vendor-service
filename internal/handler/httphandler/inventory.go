@@ -40,12 +40,7 @@ func (i *Inventory) GetInventory(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.ResponseInventory{
-		Quantity:  inventory.Quantity,
-		Reserved:  inventory.Reserved,
-		VendorID:  inventory.VendorID,
-		ProductID: inventory.ProductID,
-	})
+	c.JSON(http.StatusOK, i.serializeInventory(inventory))
 }
 
 func (i *Inventory) Upsert(c *gin.Context) {
@@ -73,6 +68,7 @@ func (i *Inventory) Upsert(c *gin.Context) {
 		VendorID:  vendorID,
 		ProductID: productID,
 		Quantity:  req.Quantity,
+		Price:     req.Price,
 	})
 	if err != nil {
 		errorResponse, status := httperror.Handle(err)
@@ -163,5 +159,6 @@ func (i *Inventory) serializeInventory(inventory domain.Inventory) dto.ResponseI
 		Quantity:           inventory.Quantity,
 		DiscountPercentage: inventory.DiscountPercentage,
 		Reserved:           inventory.Reserved,
+		Price:              inventory.Price,
 	}
 }

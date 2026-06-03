@@ -7,4 +7,5 @@ type Inventory struct {
 	Quantity           int
 	Reserved           int
 	V                  int
+	Price              int
 }
