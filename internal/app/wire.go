@@ -71,8 +71,6 @@ func RunHttp() {
 	case err := <-errCh:
 		log.Fatalf("server failed %v", err)
 	}
-
-	shutdownServer(server)
 }
 
 func RunScheduler() {
