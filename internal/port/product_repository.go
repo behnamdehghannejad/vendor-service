@@ -8,4 +8,5 @@ type ProductRepository interface {
 	SoftDelete(int) error
 	FindById(int) (domain.Product, error)
 	Filter(domain.SearchProduct) ([]domain.Product, error)
+	FindByCategoryId(int) ([]domain.Product, error)
 }

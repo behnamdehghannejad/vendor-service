@@ -6,14 +6,17 @@ import (
 )
 
 type ProductService struct {
-	repository port.ProductRepository
+	repository      port.ProductRepository
+	CategoryService port.CategoryService
 }
 
 func NewProductService(
 	repository port.ProductRepository,
+	categoryService port.CategoryService,
 ) *ProductService {
 	return &ProductService{
-		repository: repository,
+		repository:      repository,
+		CategoryService: categoryService,
 	}
 }
 
@@ -35,6 +38,18 @@ func (s *ProductService) FindById(id int) (domain.Product, error) {
 
 func (s *ProductService) Filter(filter domain.SearchProduct) ([]domain.Product, error) {
 	return s.repository.Filter(filter)
+}
+
+func (s *ProductService) FindByCategoryId(categoryId int) ([]domain.Product, error) {
+	if _, err := s.CategoryService.FindById(categoryId); err != nil {
+		return nil, err
+	}
+
+	products, err := s.repository.FindByCategoryId(categoryId)
+	if err != nil {
+		return nil, err
+	}
+	return products, nil
 }
 
 func (s *ProductService) IsActive(id int) error {

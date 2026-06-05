@@ -7,17 +7,37 @@ import (
 )
 
 func TestProductRepository_Create(t *testing.T) {
+	categoryID, err := categoryRepo.Create(domain.Category{
+		Name:   "Test Category",
+		Active: true,
+	})
+	if err != nil {
+		t.Fatalf("create category failed: %v", err)
+	}
+
 	p := domain.Product{
 		Name:        "Test Product",
 		Description: "Test Description",
 		Active:      true,
+		CategoryID:  categoryID,
 	}
 
-	ID, err := productRepo.Create(p)
+	id, err := productRepo.Create(p)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
-	productRepo.DeleteProductsByIDs(ID)
+
+	defer productRepo.DeleteProductsByIDs(id)
+	defer categoryRepo.Delete(categoryID)
+
+	found, err := productRepo.FindById(id)
+	if err != nil {
+		t.Fatalf("find failed: %v", err)
+	}
+
+	if found.Name != p.Name {
+		t.Fatalf("expected %s, got %s", p.Name, found.Name)
+	}
 }
 
 func TestProductRepository_FindById(t *testing.T) {
@@ -26,13 +46,14 @@ func TestProductRepository_FindById(t *testing.T) {
 		Active: true,
 	}
 
-	ID, err := productRepo.Create(p)
+	id, err := productRepo.Create(p)
 	if err != nil {
-		t.Fatalf("filter failed: %v", err)
+		t.Fatalf("create failed: %v", err)
 	}
-	defer productRepo.DeleteProductsByIDs(ID)
 
-	found, err := productRepo.FindById(ID)
+	defer productRepo.DeleteProductsByIDs(id)
+
+	found, err := productRepo.FindById(id)
 	if err != nil {
 		t.Fatalf("find failed: %v", err)
 	}
@@ -52,6 +73,7 @@ func TestProductRepository_Filter(t *testing.T) {
 		Name:   "Banana Product",
 		Active: false,
 	})
+
 	defer productRepo.DeleteProductsByIDs(firstID, secondID)
 
 	result, err := productRepo.Filter(domain.SearchProduct{
@@ -71,21 +93,22 @@ func TestProductRepository_Update(t *testing.T) {
 		Name:   "Old Name",
 		Active: true,
 	}
-	ID, err := productRepo.Create(p)
+
+	id, err := productRepo.Create(p)
 	if err != nil {
 		t.Fatalf("create failed: %v", err)
 	}
 
-	defer productRepo.DeleteProductsByIDs(ID)
+	defer productRepo.DeleteProductsByIDs(id)
 
-	p.ID = ID
+	p.ID = id
 	p.Name = "New Name"
 
 	if err := productRepo.Update(p); err != nil {
 		t.Fatalf("update failed: %v", err)
 	}
 
-	updated, err := productRepo.FindById(ID)
+	updated, err := productRepo.FindById(id)
 	if err != nil {
 		t.Fatalf("find failed: %v", err)
 	}
@@ -101,23 +124,58 @@ func TestProductRepository_SoftDelete(t *testing.T) {
 		Active: true,
 	}
 
-	ID, err := productRepo.Create(p)
+	id, err := productRepo.Create(p)
 	if err != nil {
 		t.Fatalf("create failed: %v", err)
 	}
 
-	defer productRepo.DeleteProductsByIDs(ID)
+	defer productRepo.DeleteProductsByIDs(id)
 
-	if err := productRepo.SoftDelete(ID); err != nil {
+	if err := productRepo.SoftDelete(id); err != nil {
 		t.Fatalf("delete failed: %v", err)
 	}
 
-	found, err := productRepo.FindById(ID)
+	found, err := productRepo.FindById(id)
 	if err != nil {
 		t.Fatalf("find failed: %v", err)
 	}
 
 	if found.Active != false {
 		t.Fatalf("expected inactive product after delete")
+	}
+}
+
+func TestProductRepository_FindByCategoryId(t *testing.T) {
+	categoryID, err := categoryRepo.Create(domain.Category{
+		Name:   "Electronics",
+		Active: true,
+	})
+	if err != nil {
+		t.Fatalf("create category failed: %v", err)
+	}
+
+	productID, err := productRepo.Create(domain.Product{
+		Name:       "Laptop",
+		CategoryID: categoryID,
+		Active:     true,
+	})
+	if err != nil {
+		t.Fatalf("create product failed: %v", err)
+	}
+
+	defer productRepo.DeleteProductsByIDs(productID)
+	defer categoryRepo.Delete(categoryID)
+
+	products, err := productRepo.FindByCategoryId(categoryID)
+	if err != nil {
+		t.Fatalf("find by category failed: %v", err)
+	}
+
+	if len(products) == 0 {
+		t.Fatal("expected at least one product")
+	}
+
+	if products[0].CategoryID != categoryID {
+		t.Fatalf("expected category %d, got %d", categoryID, products[0].CategoryID)
 	}
 }

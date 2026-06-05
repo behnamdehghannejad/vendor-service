@@ -7,6 +7,7 @@ type ProductModel struct {
 	Name        string    `gorm:"size:255"`
 	Description string    `gorm:"size:255"`
 	Active      bool      `gorm:"default:true"`
+	CategoryID  int       `gorm:"column:category_id"`
 	CreatedAt   time.Time `gorm:"column:created_at"`
 	UpdatedAt   time.Time `gorm:"column:updated_at"`
 }

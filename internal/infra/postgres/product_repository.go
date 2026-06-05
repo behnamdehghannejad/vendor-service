@@ -80,6 +80,16 @@ func (repo *ProductRepository) Filter(filter domain.SearchProduct) ([]domain.Pro
 	return repo.toProductsDomain(entities), nil
 }
 
+func (repo *ProductRepository) FindByCategoryId(categoryId int) ([]domain.Product, error) {
+	var entities []model.ProductModel
+
+	if err := repo.db.First(&entities, "categoryID = ?", categoryId).Error; err != nil {
+		return nil, convertPostgresErrorToAppError(err, categoryId)
+	}
+
+	return repo.toProductsDomain(entities), nil
+}
+
 func (repo *ProductRepository) FindById(id int) (domain.Product, error) {
 	var entity model.ProductModel
 
@@ -96,6 +106,7 @@ func (repo *ProductRepository) toProductModel(product domain.Product) *model.Pro
 		Name:        product.Name,
 		Description: product.Description,
 		Active:      product.Active,
+		CategoryID:  product.CategoryID,
 		CreatedAt:   product.CreatedAt,
 		UpdatedAt:   product.UpdatedAt,
 	}
@@ -107,6 +118,7 @@ func (repo *ProductRepository) toProductDomain(product model.ProductModel) domai
 		Name:        product.Name,
 		Description: product.Description,
 		Active:      product.Active,
+		CategoryID:  product.CategoryID,
 		CreatedAt:   product.CreatedAt,
 		UpdatedAt:   product.UpdatedAt,
 	}
