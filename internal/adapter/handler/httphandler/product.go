@@ -34,9 +34,11 @@ func (h *Product) Create(c *gin.Context) {
 
 	_, err := h.productService.Create(domain.Product{
 		Name:        req.Name,
+		CategoryID:  req.CategoryID,
 		Description: req.Description,
 		Active:      true,
 	})
+
 	if err != nil {
 		errorResponse, status := httperror.Handle(err)
 		c.JSON(status, errorResponse)
@@ -63,6 +65,26 @@ func (h *Product) GetById(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, h.serializeProduct(product))
+}
+
+func (h *Product) GetProductByCategory(c *gin.Context) {
+	idStr := c.Param("category_id")
+
+	err := h.validator.ValidateID(idStr)
+	if err != nil {
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
+		return
+	}
+
+	id, _ := strconv.Atoi(idStr)
+	product, err := h.productService.FindByCategoryId(id)
+	if err != nil {
+		errorResponse, status := httperror.Handle(err)
+		c.JSON(status, errorResponse)
+		return
+	}
+	c.JSON(http.StatusOK, h.serializeProducts(product))
 }
 
 func (h *Product) Filter(c *gin.Context) {
@@ -123,6 +145,7 @@ func (h *Product) serializeProduct(product domain.Product) dto.ProductResponse {
 		Name:        product.Name,
 		Description: product.Description,
 		Active:      product.Active,
+		CategoryID:  product.CategoryID,
 		CreatedAt:   product.CreatedAt,
 		UpdatedAt:   product.UpdatedAt,
 	}

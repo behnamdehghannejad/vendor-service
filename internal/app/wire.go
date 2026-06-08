@@ -46,7 +46,7 @@ func RunHttp() {
 		return
 	}
 
-	transactionService, vendorService, productService, inventoryService, err := registerServices(cfg)
+	transactionService, vendorService, productService, inventoryService, categoryService, err := registerServices(cfg)
 	if err != nil {
 		return
 	}
@@ -56,6 +56,7 @@ func RunHttp() {
 		transactionService,
 		vendorService,
 		productService,
+		categoryService,
 		inventoryService,
 	)
 
@@ -91,7 +92,7 @@ func RunScheduler() {
 		return
 	}
 
-	_, _, _, inventoryService, err := registerServices(cfg)
+	_, _, _, _, inventoryService, err := registerServices(cfg)
 	if err != nil {
 		return
 	}
@@ -126,31 +127,34 @@ func registerServices(cfg config.Config) (
 	port.TransactionService,
 	port.VendorService,
 	port.ProductService,
+	port.CategoryService,
 	port.InventoryService,
 	error,
 ) {
 	db, err := postgres.New(cfg.Database)
 	if err != nil {
-		return nil, nil, nil, nil, apperror.Wrap(err).UnExpected().DebuggingError().Build()
+		return nil, nil, nil, nil, nil, apperror.Wrap(err).UnExpected().DebuggingError().Build()
 	}
 
 	transactionRepository := postgres.NewTransactionRepository(db)
 	vendorRepository := postgres.NewVendorRepository(db)
 	productRepository := postgres.NewProductRepository(db)
 	inventoryRepository := postgres.NewInventoryRepository(db)
+	categoryRepository := postgres.NewCategoryRepository(db)
 
 	unitOfWorkFactory := postgres.NewUnitOfWorkFactory(db)
 
 	transactionService := service.NewTransactionService(transactionRepository)
 	vendorService := service.NewVendorService(vendorRepository)
-	productService := service.NewProductService(productRepository)
+	categoryService := service.NewCategoryService(categoryRepository)
+	productService := service.NewProductService(productRepository, categoryService)
 	inventoryService := service.NewInventoryService(
 		inventoryRepository,
 		unitOfWorkFactory,
 		discount.New(cfg.DiscountClient.URL),
 	)
 
-	return transactionService, vendorService, productService, inventoryService, nil
+	return transactionService, vendorService, productService, categoryService, inventoryService, nil
 }
 
 func startServer(server *http.Server, cfg httphandler.HttpConfig, errCh chan<- error) {
@@ -183,6 +187,7 @@ func createServer(
 	vendorService port.VendorService,
 	productService port.ProductService,
 	inventoryService port.InventoryService,
+	categoryService port.CategoryService,
 ) *http.Server {
 	gin.SetMode(gin.ReleaseMode)
 
@@ -191,11 +196,12 @@ func createServer(
 	router.Use(gin.Recovery())
 	router.Use(metrics.PrometheusMiddleware())
 
-	transactionHandler, vendorHandler, productHandler, inventoryHandler := registerHandlers(
+	transactionHandler, vendorHandler, productHandler, inventoryHandler, categoryHandler := registerHandlers(
 		transactionService,
 		inventoryService,
 		vendorService,
 		productService,
+		categoryService,
 	)
 
 	registerRoutes(
@@ -204,6 +210,7 @@ func createServer(
 		vendorHandler,
 		productHandler,
 		inventoryHandler,
+		categoryHandler,
 	)
 
 	return &http.Server{
@@ -221,11 +228,13 @@ func registerHandlers(
 	inventoryService port.InventoryService,
 	vendorService port.VendorService,
 	productService port.ProductService,
+	categoryService port.CategoryService,
 ) (
 	*httphandler.Transaction,
 	*httphandler.Vendor,
 	*httphandler.Product,
 	*httphandler.Inventory,
+	*httphandler.Category,
 ) {
 	transactionHandler := httphandler.NewTransactionHandler(
 		transactionService,
@@ -241,12 +250,17 @@ func registerHandlers(
 		validator.NewProduct(productService),
 	)
 
-	inventoryHandler := httphandler.NewInventory(
+	inventoryHandler := httphandler.NewInventoryHandler(
 		inventoryService,
 		validator.NewInventory(inventoryService),
 	)
 
-	return transactionHandler, vendorHandler, productHandler, inventoryHandler
+	categoryHandler := httphandler.NewCategoryHandler(
+		categoryService,
+		validator.NewCategory(categoryService),
+	)
+
+	return transactionHandler, vendorHandler, productHandler, inventoryHandler, categoryHandler
 }
 
 func registerRoutes(
@@ -255,6 +269,7 @@ func registerRoutes(
 	vendorHandler *httphandler.Vendor,
 	productHandler *httphandler.Product,
 	inventoryHandler *httphandler.Inventory,
+	categoryHandler *httphandler.Category,
 ) {
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{"pong": true})
@@ -284,8 +299,16 @@ func registerRoutes(
 	router.GET("/api/v1/products/:id", productHandler.GetById)
 	router.GET("api/v1/products", productHandler.Filter)
 	router.PATCH("api/v1/products/:id", productHandler.Update)
+	router.GET("api/v1/products/category/:id", productHandler.GetProductByCategory)
 
 	router.GET("/api/v1/transactions", transactionHandler.Search)
+
+	router.POST("/api/v1/categories", categoryHandler.Create)
+	router.PUT("/api/v1/categories", categoryHandler.Update)
+	router.GET("/api/v1/categories/:id", categoryHandler.GetById)
+	router.DELETE("/api/v1/categories/:id", categoryHandler.Delete)
+	router.GET("/api/v1/categories/children/:id", categoryHandler.FindChildren)
+	router.GET("/api/v1/categories/parents/:id", categoryHandler.FindParents)
 }
 
 func getAddress(host string, port string) string {

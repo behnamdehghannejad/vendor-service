@@ -19,7 +19,7 @@ type Inventory struct {
 	validator        *validator.Inventory
 }
 
-func NewInventory(inventoryService port.InventoryService, validator *validator.Inventory) *Inventory {
+func NewInventoryHandler(inventoryService port.InventoryService, validator *validator.Inventory) *Inventory {
 	return &Inventory{
 		inventoryService: inventoryService,
 		validator:        validator,

@@ -17,6 +17,7 @@ var (
 	productRepo     *postgres.ProductRepository
 	inventoryRepo   *postgres.InventoryRepository
 	transactionRepo *postgres.TransactionRepository
+	categoryRepo    *postgres.CategoryRepository
 )
 
 func TestMain(m *testing.M) {
@@ -68,6 +69,7 @@ func TestMain(m *testing.M) {
 	productRepo = postgres.NewProductRepository(db)
 	transactionRepo = postgres.NewTransactionRepository(db)
 	inventoryRepo = postgres.NewInventoryRepository(db)
+	categoryRepo = postgres.NewCategoryRepository(db)
 
 	code := m.Run()
 	os.Exit(code)
